@@ -8434,15 +8434,20 @@ function parseJSON(t) {
 }
 var llmJSON = async (s, u, o) => parseJSON(await llm(s, u, o));
 var CARD_SYS = `\u0422\u044B \u2014 \u0444\u0443\u0442\u0431\u043E\u043B\u044C\u043D\u044B\u0439 \u0441\u043A\u0430\u0443\u0442-\u0430\u043D\u0430\u043B\u0438\u0442\u0438\u043A \u0434\u043B\u044F \u0441\u0438\u043C\u0443\u043B\u044F\u0442\u043E\u0440\u0430. \u041F\u043E \u0438\u043C\u0435\u043D\u0438 \u0438\u0433\u0440\u043E\u043A\u0430 \u0432\u0435\u0440\u043D\u0438 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0443 \u0432 JSON. \u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0439 \u0442\u043E\u043B\u044C\u043A\u043E \u0442\u043E, \u0447\u0442\u043E \u0437\u043D\u0430\u0435\u0448\u044C \u0434\u043E\u0441\u0442\u043E\u0432\u0435\u0440\u043D\u043E; \u0435\u0441\u043B\u0438 \u0438\u0433\u0440\u043E\u043A\u0430 \u043D\u0435 \u0437\u043D\u0430\u0435\u0448\u044C \u2014 \u0432\u0435\u0440\u043D\u0438 {"found":false}. \u041D\u0435 \u0432\u044B\u0434\u0443\u043C\u044B\u0432\u0430\u0439. \u041D\u0435 \u043F\u0438\u0448\u0438 \u043E \u043B\u0438\u0447\u043D\u043E\u0439 \u0436\u0438\u0437\u043D\u0438, \u0437\u0434\u043E\u0440\u043E\u0432\u044C\u0435, \u0441\u043A\u0430\u043D\u0434\u0430\u043B\u0430\u0445 \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u043F\u043E\u0440\u0442.
-\u0424\u043E\u0440\u043C\u0430\u0442 \u043E\u0434\u043D\u043E\u0433\u043E \u0438\u0433\u0440\u043E\u043A\u0430: {"found":true,"name":"\u0418\u043C\u044F \u0424\u0430\u043C\u0438\u043B\u0438\u044F \u043F\u043E-\u0440\u0443\u0441\u0441\u043A\u0438","pos":"\u043E\u0434\u043D\u0430 \u0438\u0437: ${POSES.join(", ")}","born":"YYYY-MM-DD \u0438\u043B\u0438 YYYY","nation":"\u0441\u0442\u0440\u0430\u043D\u0430/\u0433\u0440\u0430\u0436\u0434\u0430\u043D\u0441\u0442\u0432\u043E (\u0420\u043E\u0441\u0441\u0438\u044F, \u0411\u0435\u043B\u043E\u0440\u0443\u0441\u0441\u0438\u044F, \u0410\u0440\u043C\u0435\u043D\u0438\u044F, \u041A\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043D, \u0411\u0440\u0430\u0437\u0438\u043B\u0438\u044F \u0438 \u0442.\u0434.)","playedForOtherNationalTeam":false,"otherNationalTeam":"\u0435\u0441\u043B\u0438 \u0438\u0433\u0440\u043E\u043A \u0437\u0430\u0438\u0433\u0440\u0430\u043D \u0437\u0430 \u043D\u0430\u0446\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u0443\u044E \u0441\u0431\u043E\u0440\u043D\u0443\u044E \u0434\u0440\u0443\u0433\u043E\u0439 \u0441\u0442\u0440\u0430\u043D\u044B (\u043D\u0430\u043F\u0440. \u0410\u0440\u043C\u0435\u043D\u0438\u044F, \u0413\u0440\u0443\u0437\u0438\u044F, \u0421\u0435\u0440\u0431\u0438\u044F, \u041A\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043D), \u0443\u043A\u0430\u0437\u0430\u0442\u044C \u0442\u043E\u0447\u043D\u043E\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u044D\u0442\u043E\u0439 \u0441\u0431\u043E\u0440\u043D\u043E\u0439, \u0438\u043D\u0430\u0447\u0435 \u043F\u0443\u0441\u0442\u0430\u044F \u0441\u0442\u0440\u043E\u043A\u0430","realClub":"","style":"\u043A\u0430\u043A \u0438\u0433\u0440\u0430\u0435\u0442, \u043B\u044E\u0431\u0438\u043C\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F \u043D\u0430 \u043F\u043E\u043B\u0435, 1\u20132 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F","achievements":["\u0433\u043B\u0430\u0432\u043D\u044B\u0435 \u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F"],"stats2y":"\u0440\u0435\u0430\u043B\u044C\u043D\u0430\u044F \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 \u0437\u0430 2 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0441\u0435\u0437\u043E\u043D\u0430 \u043A\u0440\u0430\u0442\u043A\u043E","form":"\u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0438 \u0442\u0440\u0435\u043D\u0434","character":"\u0442\u0435\u043C\u043F\u0435\u0440\u0430\u043C\u0435\u043D\u0442 \u043D\u0430 \u043F\u043E\u043B\u0435: \u0441\u043F\u043E\u043A\u043E\u0439\u043D\u044B\u0439, \u0432\u0441\u043F\u044B\u043B\u044C\u0447\u0438\u0432\u044B\u0439, \u043B\u0438\u0434\u0435\u0440, \u043B\u0435\u0433\u043A\u043E \u043F\u0440\u043E\u0432\u043E\u0446\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0438 \u0442.\u043F.","news":"\u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0435 \u043D\u043E\u0432\u043E\u0441\u0442\u0438 \u0437\u0430 \u0433\u043E\u0434 \u043A\u0440\u0430\u0442\u043A\u043E"}
+\u0424\u043E\u0440\u043C\u0430\u0442 \u043E\u0434\u043D\u043E\u0433\u043E \u0438\u0433\u0440\u043E\u043A\u0430: {"found":true,"name":"\u0418\u043C\u044F \u0424\u0430\u043C\u0438\u043B\u0438\u044F \u043F\u043E-\u0440\u0443\u0441\u0441\u043A\u0438","pos":"\u043E\u0434\u043D\u0430 \u0438\u0437: ${POSES.join(", ")}","altPositions":["\u0434\u043E 2 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0445 \u0440\u0435\u0430\u043B\u044C\u043D\u044B\u0445 \u043F\u043E\u0437\u0438\u0446\u0438\u0439 \u0438\u0433\u0440\u043E\u043A\u0430 \u0438\u0437 \u0442\u043E\u0433\u043E \u0436\u0435 \u0441\u043F\u0438\u0441\u043A\u0430, \u043B\u0438\u0431\u043E [] \u0435\u0441\u043B\u0438 \u0438\u0433\u0440\u0430\u0435\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u043D\u0430 \u043E\u0434\u043D\u043E\u0439"],"born":"YYYY-MM-DD \u0438\u043B\u0438 YYYY","nation":"\u0441\u0442\u0440\u0430\u043D\u0430/\u0433\u0440\u0430\u0436\u0434\u0430\u043D\u0441\u0442\u0432\u043E (\u0420\u043E\u0441\u0441\u0438\u044F, \u0411\u0435\u043B\u043E\u0440\u0443\u0441\u0441\u0438\u044F, \u0410\u0440\u043C\u0435\u043D\u0438\u044F, \u041A\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043D, \u0411\u0440\u0430\u0437\u0438\u043B\u0438\u044F \u0438 \u0442.\u0434.)","playedForOtherNationalTeam":false,"otherNationalTeam":"\u0435\u0441\u043B\u0438 \u0438\u0433\u0440\u043E\u043A \u0437\u0430\u0438\u0433\u0440\u0430\u043D \u0437\u0430 \u043D\u0430\u0446\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u0443\u044E \u0441\u0431\u043E\u0440\u043D\u0443\u044E \u0434\u0440\u0443\u0433\u043E\u0439 \u0441\u0442\u0440\u0430\u043D\u044B (\u043D\u0430\u043F\u0440. \u0410\u0440\u043C\u0435\u043D\u0438\u044F, \u0413\u0440\u0443\u0437\u0438\u044F, \u0421\u0435\u0440\u0431\u0438\u044F, \u041A\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043D), \u0443\u043A\u0430\u0437\u0430\u0442\u044C \u0442\u043E\u0447\u043D\u043E\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u044D\u0442\u043E\u0439 \u0441\u0431\u043E\u0440\u043D\u043E\u0439, \u0438\u043D\u0430\u0447\u0435 \u043F\u0443\u0441\u0442\u0430\u044F \u0441\u0442\u0440\u043E\u043A\u0430","realClub":"","style":"\u043A\u0430\u043A \u0438\u0433\u0440\u0430\u0435\u0442, \u043B\u044E\u0431\u0438\u043C\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F \u043D\u0430 \u043F\u043E\u043B\u0435, 1\u20132 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F","achievements":["\u0433\u043B\u0430\u0432\u043D\u044B\u0435 \u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F"],"stats2y":"\u0440\u0435\u0430\u043B\u044C\u043D\u0430\u044F \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 \u0437\u0430 2 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0441\u0435\u0437\u043E\u043D\u0430 \u043A\u0440\u0430\u0442\u043A\u043E","form":"\u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0435 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0438 \u0442\u0440\u0435\u043D\u0434","character":"\u0442\u0435\u043C\u043F\u0435\u0440\u0430\u043C\u0435\u043D\u0442 \u043D\u0430 \u043F\u043E\u043B\u0435: \u0441\u043F\u043E\u043A\u043E\u0439\u043D\u044B\u0439, \u0432\u0441\u043F\u044B\u043B\u044C\u0447\u0438\u0432\u044B\u0439, \u043B\u0438\u0434\u0435\u0440, \u043B\u0435\u0433\u043A\u043E \u043F\u0440\u043E\u0432\u043E\u0446\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0438 \u0442.\u043F.","news":"\u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0435 \u043D\u043E\u0432\u043E\u0441\u0442\u0438 \u0437\u0430 \u0433\u043E\u0434 \u043A\u0440\u0430\u0442\u043A\u043E"}
 \u0414\u043B\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u0438\u043C\u0451\u043D \u0432\u0435\u0440\u043D\u0438 {"players":[...]} \u0432 \u0442\u043E\u043C \u0436\u0435 \u043F\u043E\u0440\u044F\u0434\u043A\u0435.`;
 function cardFrom(c, extra = {}) {
   const hasOtherCap = !!(c.playedForOtherNationalTeam || c.otherNationalTeam && norm(c.otherNationalTeam) !== "\u0440\u043E\u0441\u0441\u0438\u044F" || extra.otherNationalTeam && norm(extra.otherNationalTeam) !== "\u0440\u043E\u0441\u0441\u0438\u044F" || extra.playedForOtherNationalTeam);
+  const cPos = c.pos ? normPosCode(c.pos) : "";
+  const ePos = extra.pos ? normPosCode(extra.pos) : "";
+  const primaryPos = POSES.includes(cPos) ? cPos : (POSES.includes(ePos) ? ePos : "\u0426\u041F");
+  const altPositions = normalizeAltPositions(c.altPositions ?? extra.altPositions, primaryPos);
   return {
     id: uid(),
     teamId: extra.teamId || null,
     name: String(c.name || extra.name || "").trim(),
-    pos: POSES.includes(c.pos) ? c.pos : extra.pos || "\u0426\u041F",
+    pos: primaryPos,
+    altPositions,
     born: c.born || "",
     nation: c.nation || extra.nation || "\u0420\u043E\u0441\u0441\u0438\u044F",
     playedForOtherNationalTeam: hasOtherCap,
@@ -8545,11 +8550,54 @@ function normalizeRoles(raw: any, validIds?: Set<string>) {
   }
   return out;
 }
+var CANON_POSES = ["\u0412\u0420", "\u0426\u0417", "\u041B\u0417", "\u041F\u0417", "\u041E\u041F", "\u0426\u041F", "\u0410\u041F", "\u041B\u041F", "\u041F\u041F", "\u041B\u0412", "\u041F\u0412", "\u0426\u0424"];
 function normPosCode(pos: string) {
   const p = String(pos || "").trim().toUpperCase();
   if (p === "ЗАЩ") return "ЦЗ";
   if (p === "НАП") return "ЦФ";
   return p || "ЦП";
+}
+function normalizeAltPositions(raw: any, primaryPos?: string): string[] {
+  const prim = primaryPos ? normPosCode(primaryPos) : "";
+  const arr = Array.isArray(raw)
+    ? raw
+    : (typeof raw === "string" ? raw.split(/[,;/|\s]+/) : []);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  if (prim) seen.add(prim);
+  for (const item of arr) {
+    const code = normPosCode(String(item || ""));
+    if (!code || !CANON_POSES.includes(code) || seen.has(code)) continue;
+    seen.add(code);
+    out.push(code);
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+function playerPositions(pOrPos: any): string[] {
+  if (!pOrPos) return ["\u0426\u041F"];
+  if (typeof pOrPos === "string") {
+    const c = normPosCode(pOrPos);
+    return [CANON_POSES.includes(c) ? c : "\u0426\u041F"];
+  }
+  if (Array.isArray(pOrPos)) {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const item of pOrPos) {
+      const c = normPosCode(String(item || ""));
+      if (CANON_POSES.includes(c) && !seen.has(c)) {
+        seen.add(c);
+        out.push(c);
+        if (out.length >= 3) break;
+      }
+    }
+    return out.length ? out : ["\u0426\u041F"];
+  }
+  const prim = normPosCode(pOrPos.pos || "\u0426\u041F");
+  return [prim, ...normalizeAltPositions(pOrPos.altPositions, prim)];
+}
+function playerPosLabel(p: any): string {
+  return playerPositions(p).join(" / ");
 }
 function formationSlots(formation: string) {
   const parts = String(formation || "4-3-3").split("-").map((x) => Math.max(0, Math.round(Number(x)))).filter((x) => x > 0);
@@ -8626,7 +8674,7 @@ var SLOT_RU_NAME: Record<string, string> = {
   "ПВ": "правого вингера",
   "ЦФ": "центрального нападающего"
 };
-function evaluatePositionFit(naturalPos: string, slotPos: string) {
+function evaluateSinglePositionFit(naturalPos: string, slotPos: string) {
   const nat = normPosCode(naturalPos);
   const slot = normPosCode(slotPos);
   if (nat === slot) {
@@ -8738,6 +8786,23 @@ function evaluatePositionFit(naturalPos: string, slotPos: string) {
     note: `вынужденная перестановка: номинальный ${nat} играет на позиции ${SLOT_RU_NAME[slot] || slot} (${slot}) — непривычные зоны и риск ошибок в приёме и выборе позиции`
   };
 }
+function evaluatePositionFit(playerOrPos: any, slotPos: string) {
+  const positions = playerPositions(playerOrPos);
+  const prim = positions[0] || "\u0426\u041F";
+  const slot = normPosCode(slotPos);
+  if (prim === slot) {
+    return { cost: 0, severity: "exact", label: "\u043D\u0430 \u0440\u043E\u0434\u043D\u043E\u0439 \u043F\u043E\u0437\u0438\u0446\u0438\u0438", note: "" };
+  }
+  if (positions.slice(1).includes(slot)) {
+    return { cost: 0.5, severity: "exact", label: "\u043D\u0430 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u043F\u043E\u0437\u0438\u0446\u0438\u0438", note: "" };
+  }
+  let best = evaluateSinglePositionFit(prim, slot);
+  for (const alt of positions.slice(1)) {
+    const cand = evaluateSinglePositionFit(alt, slot);
+    if (cand.cost < best.cost) best = cand;
+  }
+  return best;
+}
 function assignFormationSlots(formation: string, starterIds: string[], explicitSlots?: any) {
   const slots = formationSlots(formation);
   const starters = (starterIds || []).slice(0, 11);
@@ -8759,7 +8824,7 @@ function assignFormationSlots(formation: string, starterIds: string[], explicitS
       seen.add(pid);
       const p = player(pid);
       const nat = p?.pos || "ЦП";
-      parsed.push({ slotIndex: i, slotPos, pid, naturalPos: nat, fit: evaluatePositionFit(nat, slotPos) });
+      parsed.push({ slotIndex: i, slotPos, pid, naturalPos: nat, positions: playerPositions(p || nat), fit: evaluatePositionFit(p || nat, slotPos) });
     }
     if (ok && seen.size === starters.length) {
       const byPid: Record<string, any> = {};
@@ -8771,7 +8836,7 @@ function assignFormationSlots(formation: string, starterIds: string[], explicitS
   const assign = new Array(n).fill(-1);
   const usedP = new Set<number>();
   const costs = Array.from({ length: n }, (_, si) =>
-    Array.from({ length: n }, (__, pi) => evaluatePositionFit(player(starters[pi])?.pos || "ЦП", slots[si] || "ЦП").cost)
+    Array.from({ length: n }, (__, pi) => evaluatePositionFit(player(starters[pi]) || "ЦП", slots[si] || "ЦП").cost)
   );
   // Greedy pass ordered by best minimum cost, then 2-opt swap refinement to global optimum
   const slotOrder = Array.from({ length: n }, (_, i) => i).sort((a, b) => Math.min(...costs[a]) - Math.min(...costs[b]));
@@ -8807,8 +8872,9 @@ function assignFormationSlots(formation: string, starterIds: string[], explicitS
   for (let i = 0; i < n; i++) {
     const pid = starters[assign[i]];
     const slotPos = slots[i] || "ЦП";
-    const nat = player(pid)?.pos || "ЦП";
-    const entry = { slotIndex: i, slotPos, pid, naturalPos: nat, fit: evaluatePositionFit(nat, slotPos) };
+    const p = player(pid);
+    const nat = p?.pos || "ЦП";
+    const entry = { slotIndex: i, slotPos, pid, naturalPos: nat, positions: playerPositions(p || nat), fit: evaluatePositionFit(p || nat, slotPos) };
     entries.push(entry);
     byPid[pid] = entry;
   }
@@ -8831,6 +8897,17 @@ function autoPick(avail, F, used = /* @__PURE__ */ new Set()) {
     for (const p of avail) {
       if (res.length >= 11 || used.has(p.id)) continue;
       if (GROUP[p.pos] === g && need[g] > 0) {
+        res.push(p.id);
+        used.add(p.id);
+        need[g]--;
+      }
+    }
+  }
+  for (const g of ["gk", "def", "mid", "fwd"]) {
+    if (need[g] <= 0) continue;
+    for (const p of avail) {
+      if (res.length >= 11 || used.has(p.id) || need[g] <= 0) continue;
+      if (playerPositions(p).some((pos) => GROUP[pos] === g)) {
         res.push(p.id);
         used.add(p.id);
         need[g]--;
@@ -8926,9 +9003,9 @@ function fixLineup(L, tid, f, allowLoan = false) {
       if (isLeg) legCount++;
     }
   }
-  const hasGK = starters.some((id) => player(id)?.pos === "\u0412\u0420");
+  const hasGK = starters.some((id) => playerPositions(player(id)).includes("\u0412\u0420"));
   if (!hasGK) {
-    const g = sq.find((p) => ok.has(p.id) && p.pos === "\u0412\u0420" && !used.has(p.id));
+    const g = sq.find((p) => ok.has(p.id) && p.pos === "\u0412\u0420" && !used.has(p.id)) || sq.find((p) => ok.has(p.id) && playerPositions(p).includes("\u0412\u0420") && !used.has(p.id));
     if (g) {
       if (starters.length >= 11) {
         const popped = starters.pop();
@@ -9286,10 +9363,10 @@ function cardLine(p, date, opts?: { slotInfo?: any; fatigueInfo?: any; roleNames
   }
   const fatTag = opts?.fatigueInfo?.label ? ` Физическая готовность: ${opts.fatigueInfo.label}.` : "";
   const rolesTag = opts?.roleNames?.length ? ` Штатные роли: ${opts.roleNames.join(", ")}.` : "";
-  return `${p.pos || "\u041F\u0417"} ${p.name}${slotTag}${a ? `, ${a} \u043B\u0435\u0442` : ""}${nat}${foot}${real} \u2014 \u0441\u0442\u0438\u043B\u044C: ${p.style || "\u0441\u0431\u0430\u043B\u0430\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439"}. \u0414\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F: ${(p.achievements || []).join("; ") || "\u043E\u043F\u044B\u0442 \u0432\u044B\u0441\u0442\u0443\u043F\u043B\u0435\u043D\u0438\u0439"}. \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 2 \u0441\u0435\u0437\u043E\u043D\u043E\u0432: ${p.stats2y || "\u0440\u0435\u0433\u0443\u043B\u044F\u0440\u043D\u0430\u044F \u0438\u0433\u0440\u043E\u0432\u0430\u044F \u043F\u0440\u0430\u043A\u0442\u0438\u043A\u0430"}. \u0424\u043E\u0440\u043C\u0430: ${p.form || "\u0441\u0442\u0430\u0431\u0438\u043B\u044C\u043D\u0430\u044F"}.${seas}${fatTag}${rolesTag} \u0425\u0430\u0440\u0430\u043A\u0442\u0435\u0440: ${p.character || "\u0445\u043B\u0430\u0434\u043D\u043E\u043A\u0440\u043E\u0432\u043D\u044B\u0439, \u043A\u043E\u043C\u0430\u043D\u0434\u043D\u044B\u0439 \u0438\u0433\u0440\u043E\u043A"}. \u041D\u043E\u0432\u043E\u0441\u0442\u0438: ${p.news || "\u0433\u043E\u0442\u043E\u0432\u0438\u0442\u0441\u044F \u043A \u043C\u0430\u0442\u0447\u0443 \u0432 \u0448\u0442\u0430\u0442\u043D\u043E\u043C \u0440\u0435\u0436\u0438\u043C\u0435"}.`;
+  return `${playerPosLabel(p)} ${p.name}${slotTag}${a ? `, ${a} \u043B\u0435\u0442` : ""}${nat}${foot}${real} \u2014 \u0441\u0442\u0438\u043B\u044C: ${p.style || "\u0441\u0431\u0430\u043B\u0430\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439"}. \u0414\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F: ${(p.achievements || []).join("; ") || "\u043E\u043F\u044B\u0442 \u0432\u044B\u0441\u0442\u0443\u043F\u043B\u0435\u043D\u0438\u0439"}. \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 2 \u0441\u0435\u0437\u043E\u043D\u043E\u0432: ${p.stats2y || "\u0440\u0435\u0433\u0443\u043B\u044F\u0440\u043D\u0430\u044F \u0438\u0433\u0440\u043E\u0432\u0430\u044F \u043F\u0440\u0430\u043A\u0442\u0438\u043A\u0430"}. \u0424\u043E\u0440\u043C\u0430: ${p.form || "\u0441\u0442\u0430\u0431\u0438\u043B\u044C\u043D\u0430\u044F"}.${seas}${fatTag}${rolesTag} \u0425\u0430\u0440\u0430\u043A\u0442\u0435\u0440: ${p.character || "\u0445\u043B\u0430\u0434\u043D\u043E\u043A\u0440\u043E\u0432\u043D\u044B\u0439, \u043A\u043E\u043C\u0430\u043D\u0434\u043D\u044B\u0439 \u0438\u0433\u0440\u043E\u043A"}. \u041D\u043E\u0432\u043E\u0441\u0442\u0438: ${p.news || "\u0433\u043E\u0442\u043E\u0432\u0438\u0442\u0441\u044F \u043A \u043C\u0430\u0442\u0447\u0443 \u0432 \u0448\u0442\u0430\u0442\u043D\u043E\u043C \u0440\u0435\u0436\u0438\u043C\u0435"}.`;
 }
 async function buildCtx(f) {
-  const ctx: any = { fid: f.id, compId: normDiscComp(f.comp), comp: compName(f), roundLabel: roundLabel(f), date: f.date, time: f.time, names: {}, pidSide: {}, pidTeam: {}, pos: {}, slotPos: {}, slotFit: {}, fatigue: { home: {}, away: {} }, roles: { home: {}, away: {} }, lineup: {}, sides: {}, loan: {} };
+  const ctx: any = { fid: f.id, compId: normDiscComp(f.comp), comp: compName(f), roundLabel: roundLabel(f), date: f.date, time: f.time, names: {}, pidSide: {}, pidTeam: {}, pos: {}, positions: {}, slotPos: {}, slotFit: {}, fatigue: { home: {}, away: {} }, roles: { home: {}, away: {} }, lineup: {}, sides: {}, loan: {} };
   const H = team(f.home), A = team(f.away);
   const lpH = teamLeagueProfile(H), lpA = teamLeagueProfile(A);
   ctx.sides = {
@@ -9337,6 +9414,8 @@ async function buildCtx(f) {
           ctx.pidSide[pid] = s;
           ctx.pidTeam[pid] = tid;
           ctx.pos[pid] = p.pos;
+          if (!ctx.positions) ctx.positions = {};
+          ctx.positions[pid] = playerPositions(p);
           const lf = loanFromName(tid, pid);
           if (lf) ctx.loan[pid] = lf;
         }
@@ -13334,6 +13413,7 @@ var pubPlayer = (p, refComp: any = null) => {
     id: p.id,
     name: p.name,
     pos: p.pos,
+    altPositions: normalizeAltPositions(p.altPositions, p.pos),
     born: p.born,
     num: p.num ?? p.number ?? null,
     number: p.number ?? p.num ?? null,
@@ -13883,16 +13963,23 @@ app.get("/api/match/:id", (req, res) => {
               : void 0,
             starters: orderedIds.map((id) => {
               const fit = slotRes.byPid[id];
+              const pObj = player(id);
+              const primPos = m.ctx.pos?.[id] || pObj?.pos || "";
               return {
                 id,
-                name: m.ctx.names?.[id] || player(id)?.name || "Игрок",
-                pos: m.ctx.pos?.[id] || player(id)?.pos || "",
+                name: m.ctx.names?.[id] || pObj?.name || "Игрок",
+                pos: primPos,
+                altPositions: normalizeAltPositions(pObj?.altPositions, primPos),
                 slotPos: m.ctx.slotPos?.[id] || fit?.slotPos || void 0,
                 fitSeverity: m.ctx.slotFit?.[id]?.severity || fit?.fit?.severity || void 0,
                 loan: m.ctx.loan?.[id] || void 0
               };
             }),
-            bench: (L.bench || []).map((id) => ({ id, name: m.ctx.names?.[id] || player(id)?.name || "Игрок", pos: m.ctx.pos?.[id] || player(id)?.pos || "", loan: m.ctx.loan?.[id] || void 0 }))
+            bench: (L.bench || []).map((id) => {
+              const pObj = player(id);
+              const primPos = m.ctx.pos?.[id] || pObj?.pos || "";
+              return { id, name: m.ctx.names?.[id] || pObj?.name || "Игрок", pos: primPos, altPositions: normalizeAltPositions(pObj?.altPositions, primPos), loan: m.ctx.loan?.[id] || void 0 };
+            })
           };
         }
       }
@@ -13964,10 +14051,12 @@ app.get("/api/match/:id", (req, res) => {
         starters: orderedIds.map((id) => {
           const p = player(id);
           const fit = slotRes.byPid[id];
+          const primPos = p ? p.pos : "";
           return {
             id,
             name: p ? p.name : "\u0418\u0433\u0440\u043E\u043A",
-            pos: p ? p.pos : "",
+            pos: primPos,
+            altPositions: normalizeAltPositions(p?.altPositions, primPos),
             slotPos: fit ? fit.slotPos : void 0,
             fitSeverity: fit ? fit.fit.severity : void 0,
             loan: loanFromName(tid, id) || void 0
@@ -13975,7 +14064,8 @@ app.get("/api/match/:id", (req, res) => {
         }),
         bench: (L.bench || []).map((id) => {
           const p = player(id);
-          return { id, name: p ? p.name : "\u0418\u0433\u0440\u043E\u043A", pos: p ? p.pos : "", loan: loanFromName(tid, id) || void 0 };
+          const primPos = p ? p.pos : "";
+          return { id, name: p ? p.name : "\u0418\u0433\u0440\u043E\u043A", pos: primPos, altPositions: normalizeAltPositions(p?.altPositions, primPos), loan: loanFromName(tid, id) || void 0 };
         })
       };
     }
@@ -16437,6 +16527,27 @@ app.post("/api/club/squad/nation", needClub, (req, res) => {
   save();
   res.json({ ok: 1, nation: p.nation, legionStatus: getLegionnaireStatus(p) });
 });
+app.post("/api/club/squad/positions", needClub, (req, res) => {
+  const p = player(req.body.playerId);
+  if (!p) return fail(res, "\u0418\u0433\u0440\u043E\u043A \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+  const inRoster = p.teamId === req.tid;
+  const inSquad = squadOf(req.tid).some((x) => x.id === p.id);
+  const isAdm = req.me?.role === "admin";
+  if (!inRoster && !inSquad && !isAdm) return fail(res, "\u041C\u0435\u043D\u044F\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438 \u043C\u043E\u0436\u043D\u043E \u0442\u043E\u043B\u044C\u043A\u043E \u0443 \u0438\u0433\u0440\u043E\u043A\u043E\u0432 \u0432\u0430\u0448\u0435\u0433\u043E \u043A\u043B\u0443\u0431\u0430");
+  const rawPos = typeof req.body.pos === "string" ? normPosCode(req.body.pos) : "";
+  if (rawPos && CANON_POSES.includes(rawPos)) {
+    if (!isAdm && (p.pos === "\u0412\u0420") !== (rawPos === "\u0412\u0420")) {
+      return fail(res, "\u041F\u0435\u0440\u0435\u0432\u043E\u0434\u0438\u0442\u044C \u0432\u0440\u0430\u0442\u0430\u0440\u044F \u0432 \u043F\u043E\u043B\u0435\u0432\u044B\u0435 \u0438 \u043D\u0430\u043E\u0431\u043E\u0440\u043E\u0442 \u043C\u043E\u0436\u0435\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440");
+    }
+    p.pos = rawPos;
+  }
+  let alts = normalizeAltPositions(req.body.altPositions !== void 0 ? req.body.altPositions : p.altPositions, p.pos);
+  if (!isAdm && p.pos !== "\u0412\u0420") alts = alts.filter((x) => x !== "\u0412\u0420");
+  p.altPositions = alts;
+  p.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+  save();
+  res.json({ ok: 1, pos: p.pos, altPositions: p.altPositions });
+});
 app.post("/api/club/squad/remove", needClub, (req, res) => {
   const tw = getTransferWindowState();
   if (!tw.canEdit) return fail(res, tw.reason, 403);
@@ -16655,7 +16766,7 @@ app.post("/api/club/lineup", needClub, (req, res) => {
   const st = (req.body.starters || []).filter((id) => sq.has(id));
   if (new Set(st).size !== st.length) return fail(res, "\u0418\u0433\u0440\u043E\u043A \u0443\u043A\u0430\u0437\u0430\u043D \u0434\u0432\u0430\u0436\u0434\u044B");
   if (st.length !== 11) return fail(res, "\u0412 \u0441\u0442\u0430\u0440\u0442\u0435 \u0434\u043E\u043B\u0436\u043D\u043E \u0431\u044B\u0442\u044C \u0440\u043E\u0432\u043D\u043E 11 \u0438\u0433\u0440\u043E\u043A\u043E\u0432");
-  if (!st.some((id) => player(id)?.pos === "\u0412\u0420")) return fail(res, "\u0412 \u0441\u0442\u0430\u0440\u0442\u0435 \u043D\u0443\u0436\u0435\u043D \u0432\u0440\u0430\u0442\u0430\u0440\u044C");
+  if (!st.some((id) => playerPositions(player(id)).includes("\u0412\u0420"))) return fail(res, "\u0412 \u0441\u0442\u0430\u0440\u0442\u0435 \u043D\u0443\u0436\u0435\u043D \u0432\u0440\u0430\u0442\u0430\u0440\u044C");
   const bad = st.map(player).filter((p) => !isAvail(p, f.date, f.comp));
   if (bad.length) return fail(res, `\u041D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B: ${bad.map((p) => p.name).join(", ")}`);
   const benchIds0 = (req.body.bench || []).filter((id) => sq.has(id) && !st.includes(id)).slice(0, 12);
@@ -17174,8 +17285,17 @@ app.post("/api/admin/player", admin, (req, res) => {
     p = cardFrom({ name: b.name }, { teamId: b.teamId });
     db.players.push(p);
   }
-  for (const k of ["name", "pos", "born", "nation", "realClub", "style", "stats2y", "form", "character", "news", "otherNationalTeam"]) {
+  for (const k of ["name", "born", "nation", "realClub", "style", "stats2y", "form", "character", "news", "otherNationalTeam"]) {
     if (typeof b[k] === "string") p[k] = b[k];
+  }
+  if (typeof b.pos === "string" && b.pos.trim()) {
+    const np = normPosCode(b.pos);
+    p.pos = POSES.includes(np) ? np : b.pos.trim().toUpperCase();
+  }
+  if (b.altPositions !== void 0) {
+    p.altPositions = normalizeAltPositions(b.altPositions, p.pos);
+  } else {
+    p.altPositions = normalizeAltPositions(p.altPositions, p.pos);
   }
   if (b.num !== void 0 || b.number !== void 0) {
     const n = b.number !== void 0 ? b.number : b.num;
@@ -17307,6 +17427,11 @@ app.post("/api/admin/refresh", admin, async (req, res) => {
         const p = findPlayerByName(names[i + j]);
         if (p && c && c.found !== false) {
           for (const k of ["style", "stats2y", "form", "character", "news"]) if (c[k]) p[k] = c[k];
+          if (c.pos) {
+            const np = normPosCode(c.pos);
+            if (POSES.includes(np)) p.pos = np;
+          }
+          if (c.altPositions !== void 0) p.altPositions = normalizeAltPositions(c.altPositions, p.pos);
           if (Array.isArray(c.achievements) && c.achievements.length) p.achievements = c.achievements;
           p.verified = true;
           p.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -17326,7 +17451,13 @@ function applyPortrait(p, c) {
   if (Array.isArray(c.achievements) && c.achievements.length) p.achievements = c.achievements.map((x) => String(x));
   else if (typeof c.achievements === "string" && c.achievements.trim()) p.achievements = [c.achievements.trim()];
   if (c.realClub) p.realClub = String(c.realClub);
-  if (c.pos && POSES.includes(c.pos)) p.pos = c.pos;
+  if (c.pos) {
+    const np = normPosCode(c.pos);
+    if (POSES.includes(np)) p.pos = np;
+  }
+  if (c.altPositions !== void 0) {
+    p.altPositions = normalizeAltPositions(c.altPositions, p.pos);
+  }
   if (c.born && /^\d{4}(-\d{2}-\d{2})?$/.test(String(c.born).trim())) p.born = String(c.born).trim();
   if (c.nation && String(c.nation).trim()) p.nation = String(c.nation).trim();
   p.verified = true;
@@ -17366,6 +17497,7 @@ function buildAnalyticalPlayerPortrait(p) {
     found: true,
     name: p.name,
     pos: p.pos || pos,
+    altPositions: normalizeAltPositions(p.altPositions, p.pos || pos),
     born: p.born || `${2026 - age}-05-15`,
     nation: p.nation || "Россия",
     playedForOtherNationalTeam: !!p.playedForOtherNationalTeam,
@@ -17384,8 +17516,8 @@ async function portraitBatch(list, strongGround = false) {
   let updated = 0, notFound = 0;
   if (hasLLM()) {
     try {
-      const lines = list.map((p, i) => `${i + 1}. ${p.name} (${p.pos || "\u043F\u043E\u0437\u0438\u0446\u0438\u044F \u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u0430"}${p.teamId ? `, \u043A\u043B\u0443\u0431 \u0432 \u0441\u0438\u043C\u0443\u043B\u044F\u0442\u043E\u0440\u0435: ${tn(p.teamId)}` : ""}${p.realClub ? `, \u0440\u0435\u0430\u043B\u044C\u043D\u044B\u0439 \u043A\u043B\u0443\u0431: ${p.realClub}` : ""}${p.born ? `, \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u0435: ${p.born}` : ""})`).join("; ");
-      const prompt = `\u0418\u0433\u0440\u043E\u043A\u0438: ${lines}.\n\u041F\u0440\u043E\u0432\u0435\u0440\u044C \u0438 \u0443\u043A\u0430\u0436\u0438 \u0430\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0435 \u043F\u043E\u0437\u0438\u0446\u0438\u044E (pos), \u0434\u0430\u0442\u0443 \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F (born) \u0438 \u0433\u0440\u0430\u0436\u0434\u0430\u043D\u0441\u0442\u0432\u043E (nation) \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0438\u0433\u0440\u043E\u043A\u0430 \u2014 \u0441\u0432\u0435\u0440\u044F\u0439 \u0441 \u0440\u0435\u0430\u043B\u044C\u043D\u044B\u043C\u0438 \u0434\u0430\u043D\u043D\u044B\u043C\u0438, \u043D\u0435 \u043A\u043E\u043F\u0438\u0440\u0443\u0439 \u0438\u0445 \u0438\u0437 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438 \u0432 \u0441\u043A\u043E\u0431\u043A\u0430\u0445, \u0435\u0441\u043B\u0438 \u043E\u043D\u0438 \u043D\u0435\u0432\u0435\u0440\u043D\u044B. \u0421\u043E\u0441\u0442\u0430\u0432\u044C \u0434\u043B\u044F \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u043F\u043E\u0434\u0440\u043E\u0431\u043D\u044B\u0439 \u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u0440\u0442\u0440\u0435\u0442: \u0441\u0442\u0438\u043B\u044C \u0438\u0433\u0440\u044B (\u043B\u044E\u0431\u0438\u043C\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F, \u0441\u0438\u043B\u044C\u043D\u044B\u0435 \u0438 \u0441\u043B\u0430\u0431\u044B\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u044B), \u0433\u043B\u0430\u0432\u043D\u044B\u0435 \u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F, \u0440\u0435\u0430\u043B\u044C\u043D\u0443\u044E \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0443 \u0437\u0430 2 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0441\u0435\u0437\u043E\u043D\u0430, \u0442\u0435\u043A\u0443\u0449\u0443\u044E \u0444\u043E\u0440\u043C\u0443, \u0445\u0430\u0440\u0430\u043A\u0442\u0435\u0440/\u0442\u0435\u043C\u043F\u0435\u0440\u0430\u043C\u0435\u043D\u0442 \u043D\u0430 \u043F\u043E\u043B\u0435, \u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0435 \u043D\u043E\u0432\u043E\u0441\u0442\u0438 \u0437\u0430 \u0433\u043E\u0434. \u0415\u0441\u043B\u0438 \u0438\u0433\u0440\u043E\u043A\u0430 \u0434\u043E\u0441\u0442\u043E\u0432\u0435\u0440\u043D\u043E \u043D\u0435 \u0437\u043D\u0430\u0435\u0448\u044C \u2014 \u0432\u0435\u0440\u043D\u0438 \u0434\u043B\u044F \u043D\u0435\u0433\u043E {"found":false}.`;
+      const lines = list.map((p, i) => `${i + 1}. ${p.name} (${playerPosLabel(p) || "\u043F\u043E\u0437\u0438\u0446\u0438\u044F \u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u0430"}${p.teamId ? `, \u043A\u043B\u0443\u0431 \u0432 \u0441\u0438\u043C\u0443\u043B\u044F\u0442\u043E\u0440\u0435: ${tn(p.teamId)}` : ""}${p.realClub ? `, \u0440\u0435\u0430\u043B\u044C\u043D\u044B\u0439 \u043A\u043B\u0443\u0431: ${p.realClub}` : ""}${p.born ? `, \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u0435: ${p.born}` : ""})`).join("; ");
+      const prompt = `\u0418\u0433\u0440\u043E\u043A\u0438: ${lines}.\n\u041F\u0440\u043E\u0432\u0435\u0440\u044C \u0438 \u0443\u043A\u0430\u0436\u0438 \u0430\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0435 \u043E\u0441\u043D\u043E\u0432\u043D\u0443\u044E \u043F\u043E\u0437\u0438\u0446\u0438\u044E (pos), \u0434\u043E 2 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0445 \u043F\u043E\u0437\u0438\u0446\u0438\u0439 (altPositions), \u0434\u0430\u0442\u0443 \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F (born) \u0438 \u0433\u0440\u0430\u0436\u0434\u0430\u043D\u0441\u0442\u0432\u043E (nation) \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0438\u0433\u0440\u043E\u043A\u0430 \u2014 \u0441\u0432\u0435\u0440\u044F\u0439 \u0441 \u0440\u0435\u0430\u043B\u044C\u043D\u044B\u043C\u0438 \u0434\u0430\u043D\u043D\u044B\u043C\u0438, \u043D\u0435 \u043A\u043E\u043F\u0438\u0440\u0443\u0439 \u0438\u0445 \u0438\u0437 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438 \u0432 \u0441\u043A\u043E\u0431\u043A\u0430\u0445, \u0435\u0441\u043B\u0438 \u043E\u043D\u0438 \u043D\u0435\u0432\u0435\u0440\u043D\u044B. \u0421\u043E\u0441\u0442\u0430\u0432\u044C \u0434\u043B\u044F \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u043F\u043E\u0434\u0440\u043E\u0431\u043D\u044B\u0439 \u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u0440\u0442\u0440\u0435\u0442: \u0441\u0442\u0438\u043B\u044C \u0438\u0433\u0440\u044B (\u043B\u044E\u0431\u0438\u043C\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F, \u0441\u0438\u043B\u044C\u043D\u044B\u0435 \u0438 \u0441\u043B\u0430\u0431\u044B\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u044B), \u0433\u043B\u0430\u0432\u043D\u044B\u0435 \u0434\u043E\u0441\u0442\u0438\u0436\u0435\u043D\u0438\u044F, \u0440\u0435\u0430\u043B\u044C\u043D\u0443\u044E \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0443 \u0437\u0430 2 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0445 \u0441\u0435\u0437\u043E\u043D\u0430, \u0442\u0435\u043A\u0443\u0449\u0443\u044E \u0444\u043E\u0440\u043C\u0443, \u0445\u0430\u0440\u0430\u043A\u0442\u0435\u0440/\u0442\u0435\u043C\u043F\u0435\u0440\u0430\u043C\u0435\u043D\u0442 \u043D\u0430 \u043F\u043E\u043B\u0435, \u0441\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0435 \u043D\u043E\u0432\u043E\u0441\u0442\u0438 \u0437\u0430 \u0433\u043E\u0434. \u0415\u0441\u043B\u0438 \u0438\u0433\u0440\u043E\u043A\u0430 \u0434\u043E\u0441\u0442\u043E\u0432\u0435\u0440\u043D\u043E \u043D\u0435 \u0437\u043D\u0430\u0435\u0448\u044C \u2014 \u0432\u0435\u0440\u043D\u0438 \u0434\u043B\u044F \u043D\u0435\u0433\u043E {"found":false}.`;
       const grounded = strongGround ? provList()[0]?.n === "gemini" : !!db.settings.grounding && provList()[0]?.n === "gemini";
       const r = await llmJSON(CARD_SYS, prompt, { task: "portrait", temp: 0.3, max: 8e3, grounded });
       const cards = r.players || (r.found !== void 0 ? [r] : []);
@@ -20211,6 +20343,7 @@ async function enrichEuropeanPlayer(playerName, feeStr, transferType = "transfer
       const prompt = `Ты — международная футбольная база данных и скаутская служба Transfermarkt. Найди реального футболиста "${cleanName}"${hintCtx ? ` (указанные данные: ${hintCtx})` : ""}.
 Определи:
 - pos: точное основное амплуа игрока (СТРОГО ОДНО ИЗ: ВР, ЦЗ, ЛЗ, ПЗ, ОП, ЦП, АП, ЛВ, ПВ, ЦФ)
+- altPositions: до 2 дополнительных позиций из того же списка (если игрок реально играет на 2-3 позициях), иначе []
 - age: точный возраст (число)
 - nationality: страна/гражданство на русском языке
 - fromClub: текущий или последний реальный европейский или мировой клуб
@@ -20221,6 +20354,7 @@ async function enrichEuropeanPlayer(playerName, feeStr, transferType = "transfer
 Ответь строго в JSON:
 {
   "pos": "ЦФ",
+  "altPositions": ["ЛВ"],
   "age": 26,
   "nationality": "Швеция",
   "fromClub": "Спортинг",
@@ -20230,13 +20364,14 @@ async function enrichEuropeanPlayer(playerName, feeStr, transferType = "transfer
 }`;
       const info = await llmJSON("Ты — футбольная база данных.", prompt, { task: "enrich-player", temp: 0.2, max: 400 });
       if (!hPos && info?.pos && POSES.includes(info.pos)) pos = info.pos;
+      const altPositions = normalizeAltPositions(info?.altPositions, hPos || pos);
       if (!hAge && info?.age && Number(info.age) >= 16 && Number(info.age) <= 45) age2 = Number(info.age);
       if (!hNat && info?.nationality) nationality = String(info.nationality);
       if (!hClub && info?.fromClub) fromClub = String(info.fromClub);
       if (info?.marketValue) marketValue = String(info.marketValue);
       if (info?.ovr && Number(info.ovr) >= 60 && Number(info.ovr) <= 99) ovr = Number(info.ovr);
       if (info?.style) style = String(info.style);
-      return applyHints({ pos, age: age2, nationality, fromClub, marketValue, ovr, style });
+      return applyHints({ pos, altPositions, age: age2, nationality, fromClub, marketValue, ovr, style });
     } catch (e) {
       console.log("[Enrich Fallback] enrichEuropeanPlayer falling back to local data");
     }

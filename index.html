@@ -4415,10 +4415,16 @@ function paintMatch() {
         ${sideLineup.starters?.length ? sideLineup.starters.map(p => {
           const isCap = sideLineup.roles?.captain && sideLineup.roles.captain === p.id;
           const capBadge = isCap ? ` <span class="tag" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;font-weight:700;font-size:10.5px" title="Капитан команды">К</span>` : '';
+          const pAll = clientPlayerPositions(p);
           const slotDiff = p.slotPos && p.pos && p.slotPos !== p.pos;
+          const isAltMatch = slotDiff && pAll.slice(1).includes(p.slotPos);
           const isForced = p.fitSeverity === 'forced' || p.fitSeverity === 'critical';
-          const slotBadge = slotDiff ? ` <span class="tag" style="font-size:10.5px;${isForced ? 'background:#fffbeb;color:#b45309;border-color:#fcd34d' : 'background:#eff6ff;color:#1e40af;border-color:#bfdbfe'}" title="${isForced ? 'Вынужденная перестановка в схеме' : 'Смежная позиция в схеме'}">в схеме: ${e(p.slotPos)}</span>` : '';
-          return `<div><span class="tag" style="min-width:32px;display:inline-block;text-align:center">${e(p.pos || 'ИГР')}</span> ${e(p.name)}${capBadge}${slotBadge}${p.loan ? ` <span class="muted small">(из «${e(p.loan)}»)</span>` : ''}</div>`;
+          const slotBadge = slotDiff
+            ? (isAltMatch
+              ? ` <span class="tag" style="font-size:10.5px;background:#f0fdf4;color:#15803d;border-color:#86efac" title="Выходит на своей дополнительной позиции">доп. поз.: ${e(p.slotPos)}</span>`
+              : ` <span class="tag" style="font-size:10.5px;${isForced ? 'background:#fffbeb;color:#b45309;border-color:#fcd34d' : 'background:#eff6ff;color:#1e40af;border-color:#bfdbfe'}" title="${isForced ? 'Вынужденная перестановка в схеме' : 'Смежная позиция в схеме'}">в схеме: ${e(p.slotPos)}</span>`)
+            : '';
+          return `<div>${clientPosBadgeHtml(p, 'min-width:32px;display:inline-block;text-align:center')} ${e(p.name)}${capBadge}${slotBadge}${p.loan ? ` <span class="muted small">(из «${e(p.loan)}»)</span>` : ''}</div>`;
         }).join('') : '<div class="muted small">Стартовый состав уточняется ближе к игре.</div>'}
         <h4 style="margin-top:14px;margin-bottom:6px">Запасные</h4>
         <div class="muted small">${sideLineup.bench?.map(p => e(p.name)).join(', ') || 'Запасные не заявлены'}</div>
@@ -6151,7 +6157,7 @@ async function renderTeamStatsView(container, teamId, opts = {}) {
                       ${!p.inSquad ? `<span class="tag sm" style="background:#fee2e2;color:#991b1b;font-size:10px">ушел из клуба</span>` : ''}
                     </div>
                   </td>
-                  <td><span class="tag sm">${e(p.pos)}</span></td>
+                  <td>${clientPosBadgeHtml(p)}</td>
                   <td><b>${p.m}</b></td>
                   <td class="muted small">${p.starts}/${p.subIns}</td>
                   <td><b>${p.min}</b></td>
@@ -6499,7 +6505,7 @@ async function pgClub(app) {
           ${(p.mandatoryBuyoutOnRplRetention || p.mandatoryBuyout) ? `<div class="small" style="color:#b45309;font-weight:600">🛡️ Обязат. выкуп: ${e(p.buyoutFee || '€8.0M')} (${e(p.loanCondition || 'при сохранении прописки в РПЛ')})</div>` : ''}
           ${p.sellOnPercent ? `<div class="small" style="color:#7c3aed;font-weight:600">🏷️ Sell-on clause ${p.sellOnPercent}% (${e(p.sellOnClubName || 'бывшему клубу')})</div>` : ''}
         </td>
-        <td>${p.pos}</td>
+        <td><div class="row" style="gap:4px;align-items:center;justify-content:center;flex-wrap:nowrap">${clientPosBadgeHtml(p)}<button type="button" class="btn alt sm" data-edit-pos="${p.id}" title="Настроить до 3 позиций игрока" style="padding:2px 6px;min-height:0;font-size:11px">✏️</button></div></td>
         <td>${age(p.born)}${isBday(p.born) ? ' 🎂' : ''}</td>
         <td class="l">${legTag}<div style="margin-top:4px"><input class="nat-edit" list="nat_list" data-pid="${p.id}" value="${e(p.nation || 'Россия')}" title="Страна (гражданство) — можно изменить" style="width:145px;padding:3px 6px;font-size:12.5px;min-height:0"></div></td>
         <td class="l muted small" style="white-space:normal;max-width:300px">${e(p.style)}</td>
@@ -6631,7 +6637,7 @@ async function pgClub(app) {
               const isExp = !!(p.loanUntil && gd && p.loanUntil < gd);
               return `<div class="row sp" style="padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;flex-wrap:wrap;gap:6px">
                 <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
-                  <span class="tag sm">${e(p.pos)}</span>
+                  ${clientPosBadgeHtml(p)}
                   <b>${e(p.name)}</b>
                   <span class="muted small">→ в клубе <b>${e(p.loanedTo || 'Другой клуб')}</b></span>
                 </div>
@@ -6665,7 +6671,7 @@ async function pgClub(app) {
         ].map(([rk, rlabel]) => {
           const curVal = (c.tactic?.roles && c.tactic.roles[rk]) || '';
           const opts = [...regList].sort((a, b) => (gp[a.pos] ?? 9) - (gp[b.pos] ?? 9)).map(p =>
-            `<option value="${e(p.id)}" ${curVal === p.id ? 'selected' : ''}>${e(p.pos)} · ${e(p.name)}</option>`
+            `<option value="${e(p.id)}" ${curVal === p.id ? 'selected' : ''}>${e(clientPosLabel(p))} · ${e(p.name)}</option>`
           ).join('');
           return `<div>
             <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px">${rlabel}</label>
@@ -6781,6 +6787,59 @@ async function pgClub(app) {
         if (r) toast('Страна изменена: ' + r.nation);
         pgClub(app);
       });
+    });
+
+    const allClubPlayersMap = Object.fromEntries([...(c.roster || []), ...(c.squad || [])].map(pl => [pl.id, pl]));
+    cb.querySelectorAll('[data-edit-pos]').forEach(btn => {
+      btn.onclick = () => {
+        const pl = allClubPlayersMap[btn.dataset.editPos];
+        if (!pl) return;
+        const canEditGk = isAdmin;
+        const allowedPrim = canEditGk || pl.pos === 'ВР' ? CLIENT_POSES : CLIENT_POSES.filter(x => x !== 'ВР');
+        const primOpts = (allowedPrim.includes(clientNormPos(pl.pos)) ? allowedPrim : [clientNormPos(pl.pos), ...allowedPrim])
+          .map(pos => `<option value="${pos}" ${clientNormPos(pl.pos) === pos ? 'selected' : ''}>${pos}</option>`).join('');
+        let selectedAlts = new Set(clientPlayerPositions(pl).slice(1));
+        modal(`<h3>🧭 Позиции игрока: ${e(pl.name)}</h3>
+          <p class="small muted" style="margin:0 0 10px">Укажите основную позицию и до 2 дополнительных (всего до 3 позиций). На всех выбранных позициях игрок выступает в схеме без штрафа.</p>
+          <label>Основная позиция</label>
+          <select id="cp_pos">${primOpts}</select>
+          <label style="margin-top:10px">Дополнительные позиции (до 2)</label>
+          <div id="cp_alts" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px"></div>
+          <div class="row sp" style="gap:8px;margin-top:12px">
+            <button type="button" class="btn" id="cp_save">Сохранить</button>
+            <button type="button" class="btn alt" id="cp_cancel">Отмена</button>
+          </div>`, m => {
+          const posSel = m.querySelector('#cp_pos');
+          const altsWrap = m.querySelector('#cp_alts');
+          const renderAlts = () => {
+            const prim = posSel.value;
+            selectedAlts.delete(prim);
+            const altPool = canEditGk || prim === 'ВР' ? CLIENT_POSES : CLIENT_POSES.filter(x => x !== 'ВР');
+            altsWrap.innerHTML = altPool.filter(x => x !== prim).map(pos => {
+              const on = selectedAlts.has(pos);
+              return `<button type="button" class="btn sm ${on ? '' : 'alt'}" data-alt-pos="${pos}" style="${on ? '' : 'opacity:.8'}">${on ? '✓ ' : ''}${pos}</button>`;
+            }).join('');
+            altsWrap.querySelectorAll('[data-alt-pos]').forEach(b => {
+              b.onclick = () => {
+                const pos = b.dataset.altPos;
+                if (selectedAlts.has(pos)) selectedAlts.delete(pos);
+                else {
+                  if (selectedAlts.size >= 2) return toast('Можно выбрать до 2 дополнительных позиций (всего 3)', true);
+                  selectedAlts.add(pos);
+                }
+                renderAlts();
+              };
+            });
+          };
+          renderAlts();
+          posSel.onchange = renderAlts;
+          m.querySelector('#cp_cancel').onclick = () => m.remove();
+          m.querySelector('#cp_save').onclick = async () => {
+            const r = await act(() => api('/club/squad/positions', withT({ playerId: pl.id, pos: posSel.value, altPositions: [...selectedAlts] })), 'Позиции обновлены');
+            if (r) { m.remove(); pgClub(app); }
+          };
+        });
+      };
     });
 
     $('#subm') && ($('#subm').onclick = async () => {
@@ -7223,7 +7282,7 @@ async function pgClub(app) {
               const isPendingFa = pendingFaIds.has(p.id);
               return `<tr>
                 <td class="l"><b>${e(p.name)}</b></td>
-                <td>${e(p.pos)}</td>
+                <td>${clientPosBadgeHtml(p)}</td>
                 <td>${age(p.born)}${isBday(p.born) ? ' 🎂' : ''}</td>
                 <td class="l">${legTag} <span class="small muted">${e(p.nation || 'Россия')}</span></td>
                 <td class="l small">${p.formerClub ? `<span class="tag">${e(p.formerClub)}</span>` : '<span class="muted">Свободный агент</span>'}${p.releasedAt ? `<div class="muted" style="font-size:11px">с ${e(p.releasedAt)}</div>` : ''}</td>
@@ -7843,6 +7902,31 @@ function clientNormPos(pos) {
   if (p === 'НАП') return 'ЦФ';
   return p || 'ЦП';
 }
+function clientPlayerPositions(p) {
+  if (!p) return ['ЦП'];
+  if (typeof p === 'string') return [clientNormPos(p)];
+  const prim = clientNormPos(p.pos || 'ЦП');
+  const raw = Array.isArray(p.altPositions) ? p.altPositions : (typeof p.altPositions === 'string' ? p.altPositions.split(/[,;/|\s]+/) : []);
+  const out = [prim];
+  const seen = new Set([prim]);
+  for (const item of raw) {
+    const code = clientNormPos(item);
+    if (CLIENT_POSES.includes(code) && !seen.has(code)) {
+      seen.add(code);
+      out.push(code);
+      if (out.length >= 3) break;
+    }
+  }
+  return out;
+}
+function clientPosLabel(p) {
+  return clientPlayerPositions(p).join(' / ');
+}
+function clientPosBadgeHtml(p, extraStyle = '') {
+  const list = clientPlayerPositions(p);
+  if (list.length <= 1) return `<span class="tag"${extraStyle ? ` style="${extraStyle}"` : ''}>${e(list[0])}</span>`;
+  return `<span class="tag"${extraStyle ? ` style="${extraStyle}"` : ''} title="Основная: ${e(list[0])}; доп.: ${e(list.slice(1).join(', '))}"><b>${e(list[0])}</b><span style="opacity:.72;font-weight:500"> / ${e(list.slice(1).join(' / '))}</span></span>`;
+}
 function clientFormationSlots(formation) {
   const parts = String(formation || '4-3-3').split('-').map(x => Math.max(0, Math.round(Number(x)))).filter(x => x > 0);
   const def = parts[0] || 4;
@@ -7886,7 +7970,7 @@ function clientFormationSlots(formation) {
   while (slots.length < 11) slots.push('ЦП');
   return slots.slice(0, 11);
 }
-function clientPosFit(naturalPos, slotPos) {
+function clientSinglePosFit(naturalPos, slotPos) {
   const nat = clientNormPos(naturalPos), slot = clientNormPos(slotPos);
   if (nat === slot) return { cost: 0, severity: 'exact', badge: '✓ Своя', color: '#15803d', bg: '#f0fdf4', border: '#86efac' };
   if (nat === 'ВР' || slot === 'ВР') return { cost: 50, severity: 'critical', badge: '🚫 Критическая перестановка', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' };
@@ -7907,13 +7991,26 @@ function clientPosFit(naturalPos, slotPos) {
   if (minors.some(Boolean)) return { cost: 2, severity: 'minor', badge: '~ Смежная', color: '#0369a1', bg: '#f0f9ff', border: '#bae6fd' };
   return { cost: 9, severity: 'forced', badge: '⚠ Неродная (вынужденная)', color: '#b45309', bg: '#fffbeb', border: '#fcd34d' };
 }
+function clientPosFit(playerOrPos, slotPos) {
+  const list = clientPlayerPositions(playerOrPos);
+  const prim = list[0] || 'ЦП';
+  const slot = clientNormPos(slotPos);
+  if (prim === slot) return { cost: 0, severity: 'exact', badge: '✓ Своя', color: '#15803d', bg: '#f0fdf4', border: '#86efac' };
+  if (list.slice(1).includes(slot)) return { cost: 0.5, severity: 'exact', badge: '✓ Доп. поз.', color: '#15803d', bg: '#f0fdf4', border: '#86efac' };
+  let best = clientSinglePosFit(prim, slot);
+  for (const alt of list.slice(1)) {
+    const cand = clientSinglePosFit(alt, slot);
+    if (cand.cost < best.cost) best = cand;
+  }
+  return best;
+}
 function clientMatchStartersToSlots(slotList, starterIds, poolById) {
   const n = Math.min(slotList.length, starterIds.length);
   const chosen = starterIds.slice(0, n);
   if (n < 11) return slotList.map((slotPos, idx) => ({ idx, slotPos, pid: chosen[idx] || '' }));
   const costOf = (slotPos, pid) => {
     const p = poolById[pid];
-    return clientPosFit(p ? p.pos : 'ЦП', slotPos).cost;
+    return clientPosFit(p || 'ЦП', slotPos).cost;
   };
   const assigned = new Array(n).fill('');
   const used = new Set();
@@ -8047,7 +8144,7 @@ function lineupForm(box, f, c, withT, app) {
     const pFat = isAdmin ? (p.fatigue || fFatMap[p.id]) : null;
     const fatBadge = isAdmin ? renderFatigueBadge(pFat, !blocked, why, { compact: false }) : '';
     return `<div class="pick ${blocked ? 'off' : ''}">
-      <span class="tag">${p.pos}</span>
+      ${clientPosBadgeHtml(p)}
       <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0"><span>${e(p.name)}</span>${legPill}${why ? `<span class="muted small">(${e(why)})</span>` : ''}</div>
         ${fatBadge}
@@ -8097,7 +8194,7 @@ function lineupForm(box, f, c, withT, app) {
     const pFat = isAdmin ? (fFatMap[p.id] || p.fatigue) : null;
     const fatBadge = isAdmin ? renderFatigueBadge(pFat, pAvail, pUnavailWhy, { compact: false }) : '';
     return `<div class="pick ${pAvail ? '' : 'off'}">
-      <span class="tag">${p.pos}</span>
+      ${clientPosBadgeHtml(p)}
       <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0">
           <span>${e(p.name)}</span>
@@ -8177,9 +8274,9 @@ function lineupForm(box, f, c, withT, app) {
     const forcedList = [];
     const rowsHtml = assigned.map(item => {
       const chosenP = poolById[item.pid];
-      const fit = clientPosFit(chosenP ? chosenP.pos : 'ЦП', item.slotPos);
+      const fit = clientPosFit(chosenP || 'ЦП', item.slotPos);
       if (fit.severity === 'forced' || fit.severity === 'critical') {
-        forcedList.push(`${chosenP?.name || item.pid}: ${chosenP?.pos || '?'} → ${item.slotPos}`);
+        forcedList.push(`${chosenP?.name || item.pid}: ${clientPosLabel(chosenP || '?')} → ${item.slotPos}`);
       }
       const pFat = isAdmin ? (fFatMap[item.pid] || chosenP?.fatigue) : null;
       const pAvail = fAvailMap[item.pid] ? fAvailMap[item.pid].available : (chosenP?.available ?? true);
@@ -8187,7 +8284,7 @@ function lineupForm(box, f, c, withT, app) {
       const slotPosOpts = CLIENT_POSES.map(pos => `<option value="${pos}" ${pos === item.slotPos ? 'selected' : ''}>${pos}</option>`).join('');
       const opts = sPids.map(pid => {
         const sp = poolById[pid];
-        return `<option value="${e(pid)}" ${pid === item.pid ? 'selected' : ''}>${e(sp?.pos || '?')} · ${e(sp?.name || pid)}</option>`;
+        return `<option value="${e(pid)}" ${pid === item.pid ? 'selected' : ''}>${e(clientPosLabel(sp || '?'))} · ${e(sp?.name || pid)}</option>`;
       }).join('');
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap">
         <select class="slot-pos-pick" data-slot-idx="${item.idx}" title="Выбрать позицию слота в схеме" style="width:74px;min-width:68px;font-weight:700;text-align:center;padding:4px 6px">${slotPosOpts}</select>
@@ -8261,7 +8358,7 @@ function lineupForm(box, f, c, withT, app) {
       const opts = uniqPlayers.map(p => {
         const pOk = availIds.has(p.id);
         const statusHint = !pOk ? ' [Недоступен]' : (sSet.has(p.id) ? ' [Старт]' : (bSet.has(p.id) ? ' [Запас]' : ''));
-        return `<option value="${e(p.id)}" ${curVal === p.id ? 'selected' : ''} ${!pOk && curVal !== p.id ? 'disabled' : ''}>${e(p.pos)} · ${e(p.name)}${statusHint}</option>`;
+        return `<option value="${e(p.id)}" ${curVal === p.id ? 'selected' : ''} ${!pOk && curVal !== p.id ? 'disabled' : ''}>${e(clientPosLabel(p))} · ${e(p.name)}${statusHint}</option>`;
       }).join('');
       return `<div>
         <label style="display:block;font-size:12px;font-weight:600;margin-bottom:3px">${rd.label}</label>
@@ -8362,11 +8459,11 @@ function lineupForm(box, f, c, withT, app) {
       const inCandidates = bPids.filter(pid => pid === ps.inPid || !validSubs.some((o, oi) => oi !== idx && o.inPid === pid));
       const outOpts = outCandidates.map(pid => {
         const p = poolById[pid];
-        return `<option value="${e(pid)}" ${pid === ps.outPid ? 'selected' : ''}>${e(p?.pos || '?')} · ${e(p?.name || pid)}</option>`;
+        return `<option value="${e(pid)}" ${pid === ps.outPid ? 'selected' : ''}>${e(clientPosLabel(p || '?'))} · ${e(p?.name || pid)}</option>`;
       }).join('');
       const inOpts = inCandidates.map(pid => {
         const p = poolById[pid];
-        return `<option value="${e(pid)}" ${pid === ps.inPid ? 'selected' : ''}>${e(p?.pos || '?')} · ${e(p?.name || pid)}</option>`;
+        return `<option value="${e(pid)}" ${pid === ps.inPid ? 'selected' : ''}>${e(clientPosLabel(p || '?'))} · ${e(p?.name || pid)}</option>`;
       }).join('');
       const condOpts = SUB_COND_OPTIONS.map(([val, lbl]) => `<option value="${val}" ${ps.condition === val ? 'selected' : ''}>${lbl}</option>`).join('');
       return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap">
@@ -8513,10 +8610,10 @@ function lineupForm(box, f, c, withT, app) {
         <div style="margin-top:6px">
           <div style="font-weight:700;margin-bottom:4px">🧭 Соответствие позициям в схеме</div>
           ${forcedSlots.length
-            ? forcedSlots.map(x => `<div class="small" style="color:#b45309">⚠️ <b>${e(poolById[x.pid]?.name || x.pid)}</b> (${e(x.naturalPos)} → <b>${e(x.slotPos)}</b>): ${e(x.fit.note || x.fit.label)}</div>`).join('')
+            ? forcedSlots.map(x => `<div class="small" style="color:#b45309">⚠️ <b>${e(poolById[x.pid]?.name || x.pid)}</b> (${e(clientPosLabel(poolById[x.pid] || x.naturalPos))} → <b>${e(x.slotPos)}</b>): ${e(x.fit.note || x.fit.label)}</div>`).join('')
             : (minorSlots.length
-              ? `<div class="small" style="color:#0369a1">ℹ️ ${minorSlots.length} смежных перестановок (${minorSlots.map(x => `${e(poolById[x.pid]?.name || '')}: ${e(x.naturalPos)}→${e(x.slotPos)}`).join(', ')}) — допустимая адаптация.</div>`
-              : '<div class="small" style="color:#15803d">✅ Все 11 игроков старта выходят строго на своих родных позициях.</div>')}
+              ? `<div class="small" style="color:#0369a1">ℹ️ ${minorSlots.length} смежных перестановок (${minorSlots.map(x => `${e(poolById[x.pid]?.name || '')}: ${e(clientPosLabel(poolById[x.pid] || x.naturalPos))}→${e(x.slotPos)}`).join(', ')}) — допустимая адаптация.</div>`
+              : '<div class="small" style="color:#15803d">✅ Все 11 игроков старта выходят на своих родных или дополнительных позициях.</div>')}
         </div>` : ''}
         ${isAdmin ? `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
@@ -9332,7 +9429,7 @@ async function pgAdmin(app) {
         return `<tr>
           <td><b style="color:#1e3a8a">${p.number || p.num || '—'}</b></td>
           <td class="l"><b>${e(p.name)}</b>${hasLn ? `<div class="small" style="color:${isExp ? '#b91c1c' : '#0369a1'};font-weight:600">🔄 В аренде${p.loanFrom ? ` из ${e(p.loanFrom)}` : ''}${p.loanUntil ? ` до ${e(fmtRuDate(p.loanUntil))}${isExp ? ' (истекла)' : ''}` : ''}</div>` : ''}</td>
-          <td>${p.pos}</td>
+          <td>${clientPosBadgeHtml(p)}</td>
           <td>${age(p.born)}${isBday(p.born) ? ' 🎂' : ''}</td>
           <td class="l" style="white-space:nowrap">${legBadge}</td>
           <td class="l"><div class="t-cell">${p.teamLogo ? `<img class="t-logo" src="${p.teamLogo}" alt=""/>` : ''}<span>${e(p.team)}</span></div></td>
@@ -9416,8 +9513,15 @@ async function pgAdmin(app) {
           <div style="flex:1"><label>Игровой номер (№)</label><input type="number" id="f_number" value="${e(p?.number ?? p?.num ?? '')}" placeholder="№" min="1" max="99"></div>
         </div>
         <div class="row">
-          <div style="flex:1">${f('pos', 'Позиция (ВР, ЦЗ, ЛЗ, ПЗ, ОП, ЦП, АП, ЛВ, ПВ, ЦФ)')}</div>
+          <div style="flex:1">
+            <label>Основная позиция</label>
+            <select id="f_pos">${(CLIENT_POSES.includes(clientNormPos(p?.pos || 'ЦП')) ? CLIENT_POSES : [clientNormPos(p?.pos || 'ЦП'), ...CLIENT_POSES]).map(pos => `<option value="${pos}" ${clientNormPos(p?.pos || 'ЦП') === pos ? 'selected' : ''}>${pos}</option>`).join('')}</select>
+          </div>
           <div style="flex:1">${f('born', 'Дата рождения (ГГГГ или ГГГГ-ММ-ДД)')}</div>
+        </div>
+        <div>
+          <label>Дополнительные позиции (до 2, всего до 3 с основной)</label>
+          <div id="f_alt_pos_wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px"></div>
         </div>
         <div class="row">
           <div style="flex:1">${f('nation', 'Гражданство/Страна (Россия, Белоруссия, Армения, Казахстан, Бразилия и т.д.)')}</div>
@@ -9576,12 +9680,39 @@ async function pgAdmin(app) {
           ${p ? '<button class="btn alt" id="pgen">🧑‍🎨 Сделать портрет (ИИ)</button><button class="btn red" id="pdl">Удалить</button>' : ''}
         </div>`, m => {
         const g = k => m.querySelector('#f_' + k).value;
+        let selectedAltPos = new Set(clientPlayerPositions(p).slice(1));
+        const renderAltPosChips = () => {
+          const wrap = m.querySelector('#f_alt_pos_wrap');
+          const prim = m.querySelector('#f_pos')?.value || 'ЦП';
+          if (!wrap) return;
+          selectedAltPos.delete(prim);
+          wrap.innerHTML = CLIENT_POSES.filter(pos => pos !== prim).map(pos => {
+            const on = selectedAltPos.has(pos);
+            return `<button type="button" class="btn sm ${on ? '' : 'alt'}" data-adm-alt="${pos}" style="${on ? '' : 'opacity:.8'}">${on ? '✓ ' : ''}${pos}</button>`;
+          }).join('');
+          wrap.querySelectorAll('[data-adm-alt]').forEach(b => {
+            b.onclick = () => {
+              const pos = b.dataset.admAlt;
+              if (selectedAltPos.has(pos)) selectedAltPos.delete(pos);
+              else {
+                if (selectedAltPos.size >= 2) return toast('Можно выбрать до 2 дополнительных позиций (всего 3)', true);
+                selectedAltPos.add(pos);
+              }
+              renderAltPosChips();
+            };
+          });
+        };
+        renderAltPosChips();
+        m.querySelector('#f_pos')?.addEventListener('change', renderAltPosChips);
         if (p) m.querySelector('#pgen').onclick = async ev => {
           ev.target.disabled = true; ev.target.textContent = 'Работаю…';
           const r = await act(() => api('/admin/player/portrait', { playerId: p.id }), 'Портрет готов и сохранён');
           ev.target.disabled = false; ev.target.textContent = '🧑‍🎨 Сделать портрет (ИИ)';
           if (r && r.player) {
             for (const k of ['style', 'stats2y', 'form', 'character', 'news']) { const el = m.querySelector('#f_' + k); if (el) el.value = r.player[k] || ''; }
+            if (r.player.pos && m.querySelector('#f_pos')) m.querySelector('#f_pos').value = clientNormPos(r.player.pos);
+            selectedAltPos = new Set(clientPlayerPositions(r.player).slice(1));
+            renderAltPosChips();
             m.querySelector('#f_ach').value = (r.player.achievements || []).join('\n');
             Object.assign(p, r.player);
             load();
@@ -9706,6 +9837,7 @@ async function pgAdmin(app) {
             number: m.querySelector('#f_number')?.value || null,
             num: m.querySelector('#f_number')?.value || null,
             pos: g('pos'),
+            altPositions: [...selectedAltPos],
             born: g('born'),
             nation: g('nation') || 'Россия',
             playedForOtherNationalTeam: m.querySelector('#f_playedForOtherNationalTeam')?.checked,
