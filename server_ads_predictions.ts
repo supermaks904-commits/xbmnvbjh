@@ -45,7 +45,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
   },
   {
     key: 'rfs_bonus',
-    label: 'Бонус от РФС — Премиум-реклама (€1 000 после 30/30)',
+    label: 'Бонус от РФС — Премиум-реклама (€1 000 после 35/35)',
     category: 'sponsors',
     format: 'long',
     durationSec: 15,
@@ -81,7 +81,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
     durationSec: 5,
     requiresClick: false,
     defaultBlockId: 'int-coins-short',
-    maxPerCycle: 30,
+    maxPerCycle: 15,
   },
   {
     key: 'coins_banner',
@@ -91,7 +91,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
     durationSec: 5,
     requiresClick: false,
     defaultBlockId: 'int-coins-banner',
-    maxPerCycle: 30,
+    maxPerCycle: 15,
   },
   {
     key: 'coins_long',
@@ -101,7 +101,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
     durationSec: 30,
     requiresClick: false,
     defaultBlockId: 'int-coins-long',
-    maxPerCycle: 30,
+    maxPerCycle: 15,
   },
   {
     key: 'nt_propose_player',
@@ -155,13 +155,13 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
   },
   {
     key: 'bot_sponsor',
-    label: 'Спонсор 4 (Telegram-бот Adsgram) — Пост в боте (€600)',
+    label: 'Спонсор 4 (МегаФон — Telegram-бот) — Пост в боте (€500)',
     category: 'sponsors',
     format: 'bot',
     durationSec: 10,
     requiresClick: true,
     defaultBlockId: 'bot-sponsor',
-    maxPerCycle: 10,
+    maxPerCycle: 5,
   },
   {
     key: 'bot_coins',
@@ -171,7 +171,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
     durationSec: 10,
     requiresClick: true,
     defaultBlockId: 'bot-coins',
-    maxPerCycle: 30,
+    maxPerCycle: 15,
   },
 ];
 
@@ -228,23 +228,24 @@ export const SPONSORS: SponsorConfig[] = [
   },
   {
     id: 'tg_bot_sponsor',
-    name: 'Telegram-бот Adsgram',
-    tagline: 'Рекламный пост в личку бота',
-    description: 'Бот отправит рекламное сообщение в Telegram. Перейдите по ссылке в посте, чтобы получить спонсорскую выплату.',
+    name: 'МегаФон',
+    tagline: 'Официальный цифровой партнёр',
+    description: 'Партнёрский пост приходит в личку Telegram-бота. Перейдите по ссылке в посте, чтобы получить спонсорскую выплату.',
     blockKey: 'bot_sponsor',
     formatLabel: 'Пост в боте (переход)',
-    rewardEur: 600,
-    maxViews: 10,
+    rewardEur: 500,
+    maxViews: 5,
     approvalRate: 0.95,
-    accentColor: '#0f766e',
+    accentColor: '#00b956',
     isBotAd: true,
   },
 ];
 
-const CYCLE_MS = 24 * 60 * 60 * 1000;
+const CYCLE_MS = 2 * 60 * 1000;
 const FRIENDLY_BREAK_LIMIT = 9;
 const STARTER_COINS = 5;
-const RFS_REQUIRED_VIEWS = 30;
+const RFS_REQUIRED_VIEWS = 35;
+const PREDICTION_AD_MAX_PER_CYCLE = 15;
 
 const SEASON_PRIZES = [
   {
@@ -1527,7 +1528,7 @@ function executeSponsorCredit(
   if (currentViews >= sp.maxViews) {
     return {
       ok: false,
-      error: `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`,
+      error: `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`,
     };
   }
   if (!st.cycleStartedAt) st.cycleStartedAt = Date.now();
@@ -1594,10 +1595,10 @@ function executeCoinsCredit(
 
   const wallet = ensureWallet(db, actorKey);
   const cur = Number(wallet.adCounts[blockKey] || 0);
-  if (cur >= 30) {
+  if (cur >= PREDICTION_AD_MAX_PER_CYCLE) {
     return {
       ok: false,
-      error: 'Достигнут лимит рекламного блока (30/30 за 24 часа). Выберите другой формат или дождитесь сброса.',
+      error: `Достигнут лимит рекламного блока (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты). Выберите другой формат или дождитесь сброса.`,
     };
   }
   if (!wallet.cycleStartedAt) wallet.cycleStartedAt = Date.now();
@@ -1858,12 +1859,12 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       const st = ensureSponsorState(db, actor.teamId);
       const sp = SPONSORS.find((x) => x.blockKey === 'bot_sponsor')!;
       if (Number(st.views[sp.id] || 0) >= sp.maxViews) {
-        return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+        return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`);
       }
     } else {
       const wallet = ensureWallet(db, actor.actorKey);
-      if (Number(wallet.adCounts.bot_coins || 0) >= 30) {
-        return ctx.fail(res, 'Достигнут лимит бот-рекламы для прогнозов (30/30 за 24 часа).');
+      if (Number(wallet.adCounts.bot_coins || 0) >= PREDICTION_AD_MAX_PER_CYCLE) {
+        return ctx.fail(res, `Достигнут лимит бот-рекламы для прогнозов (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты).`);
       }
     }
 
@@ -2089,7 +2090,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
           rows.push([{ text: '⚽ Открыть Вирт РПЛ', web_app: { url: siteUrl } }]);
         }
         rows.push([{ text: '🪙 Реклама для Прогнозов (+2 мон.)', callback_data: 'ads_bot:bot_coins' }]);
-        rows.push([{ text: '💼 Реклама для Спонсоров (+€600)', callback_data: 'ads_bot:bot_sponsor' }]);
+        rows.push([{ text: '💼 Спонсор МегаФон (+€500)', callback_data: 'ads_bot:bot_sponsor' }]);
         await sendBotReply(
           `🏟 <b>Вирт РПЛ — Меню бота</b>\n\nЗдесь вы можете получить рекламные посты партнёров для пополнения монет в Прогнозах или бюджета вашего клуба.`,
           { inline_keyboard: rows }
@@ -2117,14 +2118,14 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
           const actorKey = linkedTid ? `club:${linkedTid}` : `user:${tgKey}`;
           if (blockKey === 'bot_coins') {
             const w = ensureWallet(db, actorKey);
-            if (Number(w.adCounts.bot_coins || 0) >= 30) {
-              await answerCb('Дневной лимит (30/30) исчерпан.', true);
+            if (Number(w.adCounts.bot_coins || 0) >= PREDICTION_AD_MAX_PER_CYCLE) {
+              await answerCb(`Лимит (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE}) исчерпан. Сброс через 2 мин.`, true);
               return;
             }
           } else if (linkedTid) {
             const st = ensureSponsorState(db, linkedTid);
-            if (Number(st.views.tg_bot_sponsor || 0) >= 10) {
-              await answerCb('Лимит спонсора (10/10) исчерпан.', true);
+            if (Number(st.views.tg_bot_sponsor || 0) >= 5) {
+              await answerCb('Лимит спонсора (5/5) исчерпан. Сброс через 2 мин.', true);
               return;
             }
           }
@@ -2210,7 +2211,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const st = ensureSponsorState(db, req.tid);
     const currentViews = Number(st.views[sp.id] || 0);
     if (currentViews >= sp.maxViews) {
-      return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+      return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`);
     }
     const v = verifyAndConsumeAdProof(req.body?.adProof, sp.blockKey, actor.actorKey, sp.blockKey === 'bot_sponsor');
     if (!v.ok) return ctx.fail(res, v.error);
@@ -2226,10 +2227,10 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const st = ensureSponsorState(db, req.tid);
     const totalViews = SPONSORS.reduce((acc, s) => acc + Math.min(s.maxViews, Number(st.views[s.id] || 0)), 0);
     if (totalViews < RFS_REQUIRED_VIEWS) {
-      return ctx.fail(res, `Сначала нужно просмотреть ${RFS_REQUIRED_VIEWS} реклам у спонсоров (сейчас ${totalViews}/${RFS_REQUIRED_VIEWS}).`);
+      return ctx.fail(res, `Сначала нужно просмотреть все ${RFS_REQUIRED_VIEWS} реклам у спонсоров (сейчас ${totalViews}/${RFS_REQUIRED_VIEWS}).`);
     }
     if (Number(st.rfsExtraViews || 0) >= 30) {
-      return ctx.fail(res, 'Достигнут дневной лимит блока Adsgram для бонуса РФС (30/30). Дождитесь сброса 24-часового таймера.');
+      return ctx.fail(res, 'Достигнут лимит блока Adsgram для бонуса РФС (30/30). Дождитесь сброса 2-минутного таймера.');
     }
     const v = verifyAndConsumeAdProof(req.body?.adProof, 'rfs_bonus', actor.actorKey, false);
     if (!v.ok) return ctx.fail(res, v.error);
@@ -2253,7 +2254,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         type: 'rfs_bonus_ad',
         typeLabel: 'Бонус от РФС',
         description: isActivation
-          ? `Бонус от РФС активирован (после 30/30 реклам): +€${reward.toLocaleString('ru-RU')}`
+          ? `Бонус от РФС активирован (после ${RFS_REQUIRED_VIEWS}/${RFS_REQUIRED_VIEWS} реклам): +€${reward.toLocaleString('ru-RU')}`
           : `Бонусная реклама РФС #${st.rfsExtraViews}: +€${reward.toLocaleString('ru-RU')}`,
         date: nowIso,
       });
@@ -2551,10 +2552,10 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         resetAt: wallet.cycleStartedAt ? wallet.cycleStartedAt + CYCLE_MS : null,
       },
       coinOffers: [
-        { blockKey: 'coins_short', blockId: blocks.coins_short, label: 'Короткая реклама', durationHint: '5 сек', rewardCoins: 1, maxViews: 30, views: Number(wallet.adCounts.coins_short || 0) },
-        { blockKey: 'coins_banner', blockId: blocks.coins_banner, label: 'Баннерная реклама', durationHint: 'баннер', rewardCoins: 2, maxViews: 30, views: Number(wallet.adCounts.coins_banner || 0) },
-        { blockKey: 'coins_long', blockId: blocks.coins_long, label: 'Длинная реклама', durationHint: '30 сек', rewardCoins: 3, maxViews: 30, views: Number(wallet.adCounts.coins_long || 0) },
-        { blockKey: 'bot_coins', blockId: blocks.bot_coins, label: 'Пост в боте', durationHint: 'бот · переход', rewardCoins: 2, maxViews: 30, views: Number(wallet.adCounts.bot_coins || 0), isBotAd: true },
+        { blockKey: 'coins_short', blockId: blocks.coins_short, label: 'Короткая реклама', durationHint: '5 сек', rewardCoins: 1, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_short || 0) },
+        { blockKey: 'coins_banner', blockId: blocks.coins_banner, label: 'Баннерная реклама', durationHint: 'баннер', rewardCoins: 2, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_banner || 0) },
+        { blockKey: 'coins_long', blockId: blocks.coins_long, label: 'Длинная реклама', durationHint: '30 сек', rewardCoins: 3, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_long || 0) },
+        { blockKey: 'bot_coins', blockId: blocks.bot_coins, label: 'Пост в боте', durationHint: 'бот · переход', rewardCoins: 2, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.bot_coins || 0), isBotAd: true },
       ],
       markets: PREDICTION_MARKETS,
       fixtures: openFixtures,
@@ -2577,8 +2578,8 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const actor = resolveActor(req);
     const wallet = ensureWallet(db, actor.actorKey);
     const cur = Number(wallet.adCounts[blockKey] || 0);
-    if (cur >= 30) {
-      return ctx.fail(res, 'Достигнут лимит рекламного блока (30/30 за 24 часа). Выберите другой формат или дождитесь сброса.');
+    if (cur >= PREDICTION_AD_MAX_PER_CYCLE) {
+      return ctx.fail(res, `Достигнут лимит рекламного блока (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты). Выберите другой формат или дождитесь сброса.`);
     }
 
     const v = verifyAndConsumeAdProof(req.body?.adProof, blockKey, actor.actorKey, blockKey === 'bot_coins');

@@ -1214,7 +1214,7 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
             <div style="height:100%;width:${Math.round((s.views / s.maxViews) * 100)}%;background:${s.accentColor}"></div>
           </div>
           <button class="btn" data-sp-ask="${e(s.id)}" data-sp-block="${e(s.blockKey)}" data-sp-name="${e(s.name)}" ${done ? 'disabled' : ''} style="width:100%;min-height:44px;${done ? 'opacity:0.55' : ''}">
-            ${done ? 'Лимит 10/10 выполнен' : `Попросить деньги (${fmtEuro(s.rewardEur)})`}
+            ${done ? `Лимит ${s.maxViews}/${s.maxViews} выполнен` : `Попросить деньги (${fmtEuro(s.rewardEur)})`}
           </button>
         </div>
       </div>`;
@@ -1226,10 +1226,10 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
       <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
         <div>
           <h2 style="margin:0 0 4px">Спонсорская программа клуба</h2>
-          <div class="small muted">Запросите финансирование у 4 спонсоров (включая посты в Telegram-боте, вероятность одобрения 95/5). Всего 30 показов открывают бонус от РФС.</div>
+          <div class="small muted">Запросите финансирование у 4 спонсоров (вероятность одобрения 95/5). Комбо из 35 показов (10 + 10 + 10 + 5) открывает бонус от РФС.</div>
         </div>
         <div style="text-align:right;font-variant-numeric:tabular-nums">
-          <div class="small muted">Сброс 24-часового цикла</div>
+          <div class="small muted">Сброс 2-минутного цикла</div>
           <div id="sp_reset_timer" style="font:700 18px Unbounded,sans-serif;color:var(--deep)">${sp.resetAt ? fmtCountdown(sp.remainingMs) : 'Цикл не начат'}</div>
         </div>
       </div>
@@ -1243,7 +1243,7 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
           <div style="height:100%;width:${pct}%;background:var(--green);transition:width 0.3s"></div>
         </div>
         <div class="small muted" style="margin-top:6px">
-          Важно: если не успеть посмотреть 30 реклам за 24 часа с момента первого просмотра (даже если не хватило 1 рекламы), прогресс сбросится на 0/30.
+          Важно: если не успеть посмотреть все ${sp.totalRequired} реклам за 2 минуты с момента первого просмотра (даже если не хватило 1 рекламы), прогресс сбросится на 0/${sp.totalRequired}.
         </div>
       </div>
 
@@ -1256,16 +1256,16 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
           <h3 style="margin:0 0 4px">Бонус от РФС — Премиум-финансирование</h3>
           <div class="small" style="line-height:1.45">
             ${sp.rfsUnlocked
-              ? `Все 30 реклам просмотрены! ${sp.rfsClaimed
+              ? `Все ${sp.totalRequired} реклам просмотрены! ${sp.rfsClaimed
                   ? `Бонус активирован. Каждая дополнительная реклама в этом блоке приносит +€1 000 в бюджет клуба (просмотрено: ${sp.rfsExtraViews}/${sp.rfsMaxViews}, заработано: ${fmtEuro(sp.rfsEarnedEur)}).`
-                  : 'Нажмите кнопку и посмотрите 1 бонусную рекламу РФС, чтобы получить +€1 000 и открыть режим выплат по €1 000 за каждый следующий показ до сброса 24ч!'}`
-              : `Откроется после просмотра 30 реклам у спонсоров (осталось ${Math.max(0, sp.totalRequired - sp.totalViews)}). После активации каждая дополнительная реклама приносит по €1 000 до конца 24-часового цикла.`}
+                  : 'Нажмите кнопку и посмотрите 1 бонусную рекламу РФС, чтобы получить +€1 000 и открыть режим выплат по €1 000 за каждый следующий показ до сброса 2-мин таймера!'}`
+              : `Откроется после просмотра всех ${sp.totalRequired} реклам у 4 спонсоров (осталось ${Math.max(0, sp.totalRequired - sp.totalViews)}). После активации каждая дополнительная реклама приносит по €1 000 до конца 2-минутного цикла.`}
           </div>
           <div class="small muted" style="margin-top:4px">Рекламный блок Adsgram: <code>${e(sp.rfsBlockId)}</code></div>
         </div>
         <button class="btn" id="sp_rfs_btn" ${!sp.rfsUnlocked || sp.rfsExtraViews >= sp.rfsMaxViews ? 'disabled' : ''} style="min-height:46px;${!sp.rfsUnlocked ? 'opacity:0.5' : ''}">
           ${!sp.rfsUnlocked
-            ? `Заблокировано (${sp.totalViews}/30)`
+            ? `Заблокировано (${sp.totalViews}/${sp.totalRequired})`
             : sp.rfsExtraViews >= sp.rfsMaxViews
               ? 'Лимит блока 30/30 исчерпан'
               : sp.rfsClaimed
@@ -1300,7 +1300,13 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
         return;
       }
       const left = sp.resetAt - Date.now();
-      el.textContent = left > 0 ? fmtCountdown(left) : 'Сброс…';
+      if (left > 0) {
+        el.textContent = fmtCountdown(left);
+      } else {
+        el.textContent = 'Сброс…';
+        clearInterval(sponsorTimerHandle);
+        setTimeout(() => reloadClub(), 600);
+      }
     }, 1000);
   }
 
@@ -1332,7 +1338,7 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
   const rfsBtn = document.getElementById('sp_rfs_btn') as HTMLButtonElement | null;
   if (rfsBtn && !rfsBtn.disabled) {
     rfsBtn.onclick = async () => {
-      const adRes = await runAdsgramBlock('rfs_bonus', 'Бонус от РФС (+€1 000)', 'Премиум-показ после выполнения 30/30 реклам спонсоров.');
+      const adRes = await runAdsgramBlock('rfs_bonus', 'Бонус от РФС (+€1 000)', `Премиум-показ после выполнения ${sp.totalRequired}/${sp.totalRequired} реклам спонсоров.`);
       if (!adRes) return;
       try {
         const res = await api('/club/sponsors/rfs-claim', { ...teamParam, adProof: adRes.adProof });
@@ -1768,12 +1774,15 @@ export async function renderPredictionsPage(app: HTMLElement) {
             <div class="pred-ads-sub">5 монет даётся на старте · Смотрите трансляции Adsgram и получайте монеты на ставки</div>
           </div>
         </div>
-        <span class="small muted" style="font-weight:600;font-variant-numeric:tabular-nums">Лимит: 30 / блок за 24ч</span>
+        <span class="small muted" style="font-weight:600;font-variant-numeric:tabular-nums">
+          Лимит: 15 / блок · Сброс: <b id="pred_reset_timer">${wallet.resetAt ? fmtCountdown(Math.max(0, wallet.resetAt - Date.now())) : '2 мин'}</b>
+        </span>
       </div>
       <div class="pred-ads-grid">
         ${data.coinOffers.map((o: any) => {
-          const pct = Math.min(100, Math.round((Number(o.views || 0) / Number(o.maxViews || 30)) * 100));
-          const maxed = Number(o.views || 0) >= Number(o.maxViews || 30);
+          const maxV = Number(o.maxViews || 15);
+          const pct = Math.min(100, Math.round((Number(o.views || 0) / maxV) * 100));
+          const maxed = Number(o.views || 0) >= maxV;
           const isFeatured = o.blockKey === 'coins_long';
           const footMeta = o.blockKey === 'coins_short'
             ? { title: 'Быстрый пас', sub: 'Короткий ролик · 5 сек' }
@@ -1827,6 +1836,25 @@ export async function renderPredictionsPage(app: HTMLElement) {
 
     ${PRED_SUBTAB === 'matches' ? renderMatchesTab() : PRED_SUBTAB === 'leagues' ? renderLeaguesTab() : renderHistoryTab()}
   `;
+
+  if ((window as any).__predTimerHandle) clearInterval((window as any).__predTimerHandle);
+  if (wallet.resetAt) {
+    (window as any).__predTimerHandle = setInterval(() => {
+      const el = document.getElementById('pred_reset_timer');
+      if (!el) {
+        clearInterval((window as any).__predTimerHandle);
+        return;
+      }
+      const left = wallet.resetAt - Date.now();
+      if (left > 0) {
+        el.textContent = fmtCountdown(left);
+      } else {
+        el.textContent = 'Сброс…';
+        clearInterval((window as any).__predTimerHandle);
+        setTimeout(() => renderPredictionsPage(app), 600);
+      }
+    }, 1000);
+  }
 
   app.querySelectorAll('[data-pred-tab]').forEach((b) => {
     (b as HTMLElement).onclick = () => {
