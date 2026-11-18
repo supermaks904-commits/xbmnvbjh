@@ -627,18 +627,228 @@ function ensureExtStyles() {
       gap:8px;
       color:#166534;
     }
+    .pred-prob-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .pred-prob-bar{
+      height:5px;
+      border-radius:999px;
+      overflow:hidden;
+      display:flex;
+      background:#e7efea;
+    }
+    .pred-prob-1{ background:#1b5c3f; }
+    .pred-prob-x{ background:#9fb3a7; }
+    .pred-prob-2{ background:#2b6cb0; }
+    .pred-prob-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      font-size:11px;
+      color:#5b7064;
+      font-variant-numeric:tabular-nums;
+      flex-wrap:wrap;
+    }
+    .pred-mkt-tabs{
+      display:flex;
+      gap:5px;
+      flex-wrap:wrap;
+      padding-bottom:6px;
+      border-bottom:1px solid #e5eee8;
+    }
+    .pred-mkt-tab{
+      appearance:none;
+      -webkit-appearance:none;
+      background:#f2f6f3;
+      border:1px solid #d5e1d9;
+      border-radius:7px;
+      padding:5px 10px;
+      font-size:12px;
+      font-weight:600;
+      color:#3d5347;
+      cursor:pointer;
+      transition:all .12s;
+    }
+    .pred-mkt-tab:hover{
+      border-color:#1b5c3f;
+      color:#0d2f21;
+    }
+    .pred-mkt-tab.on{
+      background:#0d2f21;
+      border-color:#0d2f21;
+      color:#ffffff;
+    }
+    .pred-filter-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .pred-comp-pills{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .pred-comp-pill{
+      appearance:none;
+      background:#ffffff;
+      border:1px solid #cddad1;
+      border-radius:8px;
+      padding:6px 11px;
+      font-size:12.5px;
+      font-weight:600;
+      color:#3d5347;
+      cursor:pointer;
+    }
+    .pred-comp-pill.on{
+      background:#1b5c3f;
+      border-color:#1b5c3f;
+      color:#ffffff;
+    }
+    .pred-search-input{
+      min-width:200px;
+      max-width:260px;
+      padding:7px 11px !important;
+      font-size:13px !important;
+    }
+    .pred-coupon-dock{
+      position:fixed;
+      right:18px;
+      bottom:16px;
+      width:min(430px, calc(100vw - 24px));
+      background:#0d2f21;
+      color:#ffffff;
+      border-radius:14px;
+      box-shadow:0 14px 36px rgba(9,32,22,0.38);
+      border:1px solid rgba(255,255,255,0.14);
+      z-index:1200;
+      overflow:hidden;
+    }
+    .pred-coupon-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:11px 14px;
+      background:#092419;
+      cursor:pointer;
+    }
+    .pred-coupon-body{
+      max-height:54vh;
+      overflow-y:auto;
+      padding:10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .pred-coupon-item{
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:10px;
+      padding:9px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+    .pred-coupon-item-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .pred-coupon-stake-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+      font-variant-numeric:tabular-nums;
+    }
+    .pred-coupon-qty{
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+    .pred-coupon-qty button{
+      min-width:28px;
+      height:28px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,0.22);
+      background:rgba(255,255,255,0.12);
+      color:#ffffff;
+      font-weight:700;
+      font-size:12.5px;
+      cursor:pointer;
+      padding:0 6px;
+    }
+    .pred-coupon-qty button:hover{
+      background:rgba(255,255,255,0.22);
+    }
+    .pred-coupon-qty input{
+      width:52px !important;
+      height:28px !important;
+      padding:2px 5px !important;
+      border-radius:6px !important;
+      border:1px solid rgba(255,255,255,0.28) !important;
+      background:#ffffff !important;
+      color:#0d2f21 !important;
+      font-weight:700 !important;
+      text-align:center !important;
+      font-size:13px !important;
+    }
+    .pred-coupon-foot{
+      padding:10px 14px 12px;
+      background:#092419;
+      border-top:1px solid rgba(255,255,255,0.12);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .pred-coupon-presets{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      flex-wrap:wrap;
+      font-size:11.5px;
+      color:#b9d4c4;
+    }
+    .pred-coupon-presets button{
+      border:1px solid rgba(255,255,255,0.24);
+      background:rgba(255,255,255,0.10);
+      color:#ffffff;
+      border-radius:6px;
+      padding:3px 8px;
+      font-size:11.5px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .pred-coupon-presets button:hover{
+      background:rgba(255,255,255,0.22);
+    }
+    .pred-line-4{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:6px;
+    }
     @media (max-width:860px){
       .pred-grid{ grid-template-columns:1fr; }
     }
     @media (max-width:640px){
       .pred-ads-grid{ grid-template-columns:1fr; }
       .sp-cards-grid{ grid-template-columns:1fr; }
+      .pred-coupon-dock{ right:10px; left:10px; bottom:10px; width:auto; }
     }
     @media (max-width:560px){
       .pred-hero{ padding:14px 15px; }
       .pred-hero-title{ font-size:18px; }
       .pred-quick-split{ grid-template-columns:1fr; gap:8px; }
       .pred-es-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .pred-line-4{ grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
   `;
 }
@@ -1355,7 +1565,31 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
 let PRED_SUBTAB: 'matches' | 'leagues' | 'history' = 'matches';
 let SELECTED_LEAGUE_ID = 'global';
 let SELECTED_STAKE = 1;
+let PRED_COMP_FILTER = 'all';
+let PRED_SEARCH = '';
+let COUPON_EXPANDED = true;
 const OPEN_MARKETS_FIXTURES = new Set<string>();
+const FIXTURE_ACTIVE_GROUP = new Map<string, string>();
+
+interface CouponItem {
+  key: string;
+  fixtureId: string;
+  matchLabel: string;
+  market: string;
+  marketTitle: string;
+  pick: string;
+  label: string;
+  odd: number;
+  stake: number;
+  exactHome?: number;
+  exactAway?: number;
+}
+let COUPON_ITEMS: CouponItem[] = [];
+
+function fmtCoins(n: any): string {
+  const num = Math.round(Number(n || 0) * 100) / 100;
+  return Number.isInteger(num) ? String(num) : num.toFixed(2).replace(/\.?0+$/, '');
+}
 
 export async function renderPredictionsPage(app: HTMLElement) {
   ensureExtStyles();
@@ -1375,77 +1609,155 @@ export async function renderPredictionsPage(app: HTMLElement) {
   const viewerName = tgMeta.name || prof.displayName || '';
   const viewerPhoto = tgMeta.photo || prof.photoUrl || '';
 
-  // Map fixtureId -> Map<market, prediction>
-  const myPredsByFixture = new Map<string, Map<string, any>>();
+  // Map fixtureId -> list of placed predictions, and placed key set for O(1) lookup
+  const myPredsByFixture = new Map<string, any[]>();
+  const placedByKey = new Map<string, any>();
   for (const p of data.myPredictions || []) {
-    if (!myPredsByFixture.has(p.fixtureId)) myPredsByFixture.set(p.fixtureId, new Map());
+    if (!myPredsByFixture.has(p.fixtureId)) myPredsByFixture.set(p.fixtureId, []);
+    myPredsByFixture.get(p.fixtureId)!.push(p);
     const mk = p.market || 'outcome';
-    if (!myPredsByFixture.get(p.fixtureId)!.has(mk)) {
-      myPredsByFixture.get(p.fixtureId)!.set(mk, p);
-    }
+    const key = mk === 'exact_score'
+      ? `${p.fixtureId}|${mk}|${p.exactHome}:${p.exactAway}`
+      : `${p.fixtureId}|${mk}|${p.pick}`;
+    placedByKey.set(key, p);
   }
+
+  // Prune coupon items for fixtures no longer open or already placed
+  const openFixSet = new Set<string>((data.fixtures || []).map((f: any) => f.id));
+  COUPON_ITEMS = COUPON_ITEMS.filter((it) => openFixSet.has(it.fixtureId) && !placedByKey.has(it.key));
+
+  const couponKeySet = new Set<string>(COUPON_ITEMS.map((it) => it.key));
 
   const renderOddBtn = (
     fid: string,
+    matchLabel: string,
     marketId: string,
-    label: string,
+    marketTitle: string,
+    shortLbl: string,
     odd: number,
     pick: string,
-    fullLabel: string,
-    placedMk: any
+    fullLabel: string
   ) => {
-    const isThisPlaced = placedMk && placedMk.pick === pick;
-    const isMarketLocked = !!placedMk;
+    const itemKey = `${fid}|${marketId}|${pick}`;
+    const placed = placedByKey.get(itemKey);
+    const inCoupon = couponKeySet.has(itemKey);
     return `
       <button type="button"
-        class="pred-odd-btn ${isThisPlaced ? 'betted' : ''}"
-        ${isMarketLocked ? 'disabled' : ''}
+        class="pred-odd-btn ${placed ? 'betted' : inCoupon ? 'on' : ''}"
+        ${placed ? 'disabled title="Ставка уже принята"' : ''}
         data-sel-bet="${e(fid)}"
+        data-match-label="${e(matchLabel)}"
         data-market="${e(marketId)}"
+        data-market-title="${e(marketTitle)}"
         data-pick="${e(pick)}"
         data-label="${e(fullLabel)}"
         data-odd="${odd}">
-        <span class="pred-odd-k">${isThisPlaced ? '✓ ' : ''}${e(label)}</span>
+        <span class="pred-odd-k">${placed ? `✓ ${fmtCoins(placed.stake)}м · ` : ''}${e(shortLbl)}</span>
         <span class="pred-odd-v">${Number(odd).toFixed(2)}</span>
       </button>`;
   };
 
+  const renderMarketBlock = (f: any, m: any, matchLabel: string) => {
+    if (!m || !Array.isArray(m.options) || !m.options.length) return '';
+    const colsClass = m.options.length === 2
+      ? 'pred-line-2'
+      : (m.id === 'combo_w_total' || m.id === 'combo_w_btts' || m.id === 'ht_ft')
+        ? 'pred-line-4'
+        : 'pred-line-3';
+    return `
+      <div>
+        <div class="pred-sec-lbl">
+          <span>${e(m.title)}</span>
+          <span style="font-weight:400;font-size:11px;color:#7a9183">${e(m.subtitle || '')}</span>
+        </div>
+        <div class="${colsClass}">
+          ${m.options.map((o: any) =>
+            renderOddBtn(f.id, matchLabel, m.id, m.title, o.shortLabel, o.odd, o.pick, o.label)
+          ).join('')}
+        </div>
+      </div>`;
+  };
+
   const renderMatchesTab = () => {
-    if (!data.fixtures.length) {
+    const allFx: any[] = data.fixtures || [];
+    if (!allFx.length) {
       return '<div class="panel"><div class="empty">На данный момент нет открытых матчей для прогноза. Как только появятся новые туры РПЛ, Кубка или товарищеские матчи — они появятся здесь.</div></div>';
     }
+
+    const q = PRED_SEARCH.trim().toLowerCase();
+    const filtered = allFx.filter((f) => {
+      if (PRED_COMP_FILTER !== 'all' && f.comp !== PRED_COMP_FILTER) return false;
+      if (q) {
+        const txt = `${f.homeName} ${f.awayName} ${f.label} ${f.compName}`.toLowerCase();
+        if (!txt.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const compCounts: Record<string, number> = { all: allFx.length };
+    for (const f of allFx) compCounts[f.comp] = (compCounts[f.comp] || 0) + 1;
+    const compPills = [
+      { id: 'all', name: 'Все' },
+      { id: 'rpl', name: 'РПЛ' },
+      { id: 'cup', name: 'Кубок' },
+      { id: 'supercup', name: 'Суперкубок' },
+      { id: 'friendly_match', name: 'Товарищ.' },
+    ].filter((cp) => cp.id === 'all' || (compCounts[cp.id] || 0) > 0);
+
     return `
-      <div class="pred-grid">
-        ${data.fixtures.map((f: any) => {
-          const placedMap = myPredsByFixture.get(f.id) || new Map<string, any>();
-          const placedList = Array.from(placedMap.values());
+      <div class="pred-filter-row">
+        <div class="pred-comp-pills">
+          ${compPills.map((cp) => `
+            <button type="button" class="pred-comp-pill ${PRED_COMP_FILTER === cp.id ? 'on' : ''}" data-pred-comp="${e(cp.id)}">${e(cp.name)} (${compCounts[cp.id] || 0})</button>
+          `).join('')}
+        </div>
+        <input id="pred_search_inp" class="pred-search-input" type="search" placeholder="Поиск команды…" value="${e(PRED_SEARCH)}">
+      </div>
+
+      ${!filtered.length
+        ? '<div class="panel"><div class="empty">По выбранному фильтру матчей не найдено.</div></div>'
+        : `<div class="pred-grid" style="${COUPON_ITEMS.length ? 'padding-bottom:130px' : ''}">
+        ${filtered.map((f: any) => {
+          const matchLabel = `${f.homeName} — ${f.awayName}`;
+          const placedList = myPredsByFixture.get(f.id) || [];
           const fxMarkets: any[] = Array.isArray(f.markets) && f.markets.length ? f.markets : (data.markets || []);
           const byId = new Map<string, any>(fxMarkets.map((m) => [m.id, m]));
 
           const mOutcome = byId.get('outcome');
-          const mTotal = byId.get('total_goals');
-          const mBtts = byId.get('btts');
           const mDouble = byId.get('double_chance');
-          const mYc = byId.get('yellow_cards');
-          const mCorners = byId.get('corners');
-          const mSpecials = byId.get('specials');
-          const quickScores: Array<{ h: number; a: number; score: string; odd: number }> = f.quickScores || [
-            { h: 1, a: 0, score: '1:0', odd: 6.5 },
-            { h: 2, a: 0, score: '2:0', odd: 8.5 },
-            { h: 2, a: 1, score: '2:1', odd: 8.0 },
-            { h: 1, a: 1, score: '1:1', odd: 6.0 },
-            { h: 0, a: 0, score: '0:0', odd: 9.0 },
-            { h: 0, a: 1, score: '0:1', odd: 9.5 },
-            { h: 1, a: 2, score: '1:2', odd: 10.5 },
-            { h: 2, a: 2, score: '2:2', odd: 13.0 },
-          ];
+          const mHcp0 = byId.get('hcp_0');
+          const mTotal25 = byId.get('total_goals');
+          const mBtts = byId.get('btts');
+
+          const quickScores: Array<{ h: number; a: number; score: string; odd: number }> = f.quickScores || [];
           const isExtraOpen = OPEN_MARKETS_FIXTURES.has(f.id);
-          const placedExtraCount = placedList.filter((x) => !['outcome', 'total_goals', 'btts'].includes(x.market)).length;
+          const activeGroup = FIXTURE_ACTIVE_GROUP.get(f.id) || 'main';
+          const probs = f.probs || { p1: 36, pX: 28, p2: 36 };
+          const totalOutcomesCount = fxMarkets.reduce((s, m) => s + (m.id === 'exact_score' || m.id === 'specials' ? 0 : (m.options?.length || 0)), 0) + quickScores.length;
+
+          const groupTabs = [
+            { id: 'main', label: 'Форы и Тоталы' },
+            { id: 'goals', label: 'ИТ и Комбо' },
+            { id: 'halves', label: 'Таймы' },
+            { id: 'stats', label: 'Статистика и События' },
+            { id: 'exact', label: 'Точный счёт' },
+          ];
+
+          const groupMarkets = fxMarkets.filter((m) =>
+            m.group === activeGroup &&
+            m.id !== 'exact_score' &&
+            m.id !== 'specials' &&
+            !(activeGroup === 'main' && (m.id === 'outcome' || m.id === 'double_chance' || m.id === 'total_goals' || m.id === 'btts'))
+          );
+
+          const customH = Math.max(0, Math.min(15, Number((document.getElementById(`es_h_${f.id}`) as HTMLInputElement)?.value ?? 1)));
+          const customA = Math.max(0, Math.min(15, Number((document.getElementById(`es_a_${f.id}`) as HTMLInputElement)?.value ?? 1)));
+          const customOdd = f.exactMatrix?.[customH]?.[customA] ?? (6.5 + (customH + customA) * 2.5);
 
           return `
           <div class="pred-card" data-fx-card="${e(f.id)}">
             <div class="pred-card-head">
-              <span>${e(f.compName)} · ${e(f.label)}</span>
+              <span><b>${e(f.compName)}</b> · ${e(f.label)}</span>
               <span>${e(f.date)} · ${e(f.time)}</span>
             </div>
 
@@ -1461,26 +1773,45 @@ export async function renderPredictionsPage(app: HTMLElement) {
               </div>
             </div>
 
+            <div class="pred-prob-wrap">
+              <div class="pred-prob-bar" title="Оценка шансов линии">
+                <div class="pred-prob-1" style="width:${probs.p1}%"></div>
+                <div class="pred-prob-x" style="width:${probs.pX}%"></div>
+                <div class="pred-prob-2" style="width:${probs.p2}%"></div>
+              </div>
+              <div class="pred-prob-meta">
+                <span>Шансы: П1 ${Math.round(probs.p1)}% · Х ${Math.round(probs.pX)}% · П2 ${Math.round(probs.p2)}%</span>
+                <span>xG: ${Number(f.expectedGoals?.home || 1.2).toFixed(2)} – ${Number(f.expectedGoals?.away || 1.1).toFixed(2)}${f.refereeName ? ` · Судья: ${e(f.refereeName)}` : ''}</span>
+              </div>
+            </div>
+
             ${mOutcome ? `
               <div>
-                <div class="pred-sec-lbl">
-                  <span>Основной исход</span>
-                  ${placedMap.has('outcome') ? `<span style="color:#15803d">Принято</span>` : ''}
-                </div>
+                <div class="pred-sec-lbl"><span>Основной исход (1 Х 2)</span></div>
                 <div class="pred-line-3">
                   ${mOutcome.options.map((o: any) =>
-                    renderOddBtn(f.id, 'outcome', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('outcome'))
+                    renderOddBtn(f.id, matchLabel, 'outcome', 'Исход матча', o.shortLabel, o.odd, o.pick, o.label)
+                  ).join('')}
+                </div>
+              </div>` : ''}
+
+            ${mDouble ? `
+              <div>
+                <div class="pred-sec-lbl"><span>Двойной шанс</span></div>
+                <div class="pred-line-3">
+                  ${mDouble.options.map((o: any) =>
+                    renderOddBtn(f.id, matchLabel, 'double_chance', 'Двойной шанс', o.shortLabel, o.odd, o.pick, o.label)
                   ).join('')}
                 </div>
               </div>` : ''}
 
             <div class="pred-quick-split">
-              ${mTotal ? `
+              ${mTotal25 ? `
                 <div>
                   <div class="pred-sec-lbl"><span>Тотал 2.5</span></div>
                   <div class="pred-line-2">
-                    ${mTotal.options.map((o: any) =>
-                      renderOddBtn(f.id, 'total_goals', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('total_goals'))
+                    ${mTotal25.options.map((o: any) =>
+                      renderOddBtn(f.id, matchLabel, 'total_goals', 'Тотал 2.5', o.shortLabel, o.odd, o.pick, o.label)
                     ).join('')}
                   </div>
                 </div>` : ''}
@@ -1489,120 +1820,87 @@ export async function renderPredictionsPage(app: HTMLElement) {
                   <div class="pred-sec-lbl"><span>Обе забьют</span></div>
                   <div class="pred-line-2">
                     ${mBtts.options.map((o: any) =>
-                      renderOddBtn(f.id, 'btts', o.shortLabel === 'ОЗ Да' ? 'Да' : 'Нет', o.odd, o.pick, o.label, placedMap.get('btts'))
+                      renderOddBtn(f.id, matchLabel, 'btts', 'Обе забьют', o.shortLabel === 'ОЗ Да' ? 'Да' : 'Нет', o.odd, o.pick, o.label)
                     ).join('')}
                   </div>
                 </div>` : ''}
             </div>
 
+            ${mHcp0 ? `
+              <div>
+                <div class="pred-sec-lbl"><span>Фора (0) · возврат при ничьей</span></div>
+                <div class="pred-line-2">
+                  ${mHcp0.options.map((o: any) =>
+                    renderOddBtn(f.id, matchLabel, 'hcp_0', 'Фора (0)', o.shortLabel, o.odd, o.pick, o.label)
+                  ).join('')}
+                </div>
+              </div>` : ''}
+
             <button type="button" class="pred-more-btn" data-toggle-mk="${e(f.id)}">
-              <span>Ещё события: 1Х/Х2 · ЖК · Угловые · Пенальти · Точный счёт${placedExtraCount ? ` (ставок: ${placedExtraCount})` : ''}</span>
+              <span>Вся роспись БК (${totalOutcomesCount} пунктов: Форы, Тоталы, ИТ, Таймы, ЖК, Угловые, Счёт)</span>
               <span>${isExtraOpen ? 'Скрыть ▲' : 'Открыть ▼'}</span>
             </button>
 
             ${isExtraOpen ? `
               <div class="pred-more-panel">
-                ${mDouble ? `
-                  <div>
-                    <div class="pred-sec-lbl"><span>Двойной шанс</span></div>
-                    <div class="pred-line-3">
-                      ${mDouble.options.map((o: any) =>
-                        renderOddBtn(f.id, 'double_chance', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('double_chance'))
-                      ).join('')}
-                    </div>
-                  </div>` : ''}
-
-                <div class="pred-quick-split" style="border-top:0;padding-top:0">
-                  ${mYc ? `
-                    <div>
-                      <div class="pred-sec-lbl"><span>Жёлтые карточки</span></div>
-                      <div class="pred-line-2">
-                        ${mYc.options.map((o: any) =>
-                          renderOddBtn(f.id, 'yellow_cards', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('yellow_cards'))
-                        ).join('')}
-                      </div>
-                    </div>` : ''}
-                  ${mCorners ? `
-                    <div>
-                      <div class="pred-sec-lbl"><span>Угловые</span></div>
-                      <div class="pred-line-2">
-                        ${mCorners.options.map((o: any) =>
-                          renderOddBtn(f.id, 'corners', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('corners'))
-                        ).join('')}
-                      </div>
-                    </div>` : ''}
+                <div class="pred-mkt-tabs">
+                  ${groupTabs.map((gt) => `
+                    <button type="button" class="pred-mkt-tab ${activeGroup === gt.id ? 'on' : ''}" data-fx-group="${e(f.id)}" data-group="${e(gt.id)}">${e(gt.label)}</button>
+                  `).join('')}
                 </div>
 
-                ${mSpecials ? `
-                  <div>
-                    <div class="pred-sec-lbl"><span>События в матче</span></div>
-                    <div class="pred-line-2">
-                      ${mSpecials.options.map((o: any) =>
-                        renderOddBtn(f.id, 'specials', o.shortLabel, o.odd, o.pick, o.label, placedMap.get('specials'))
-                      ).join('')}
-                    </div>
-                  </div>` : ''}
-
-                <div>
-                  <div class="pred-sec-lbl">
-                    <span>Точный счёт</span>
-                    ${placedMap.has('exact_score') ? `<span style="color:#15803d">${e(placedMap.get('exact_score').pickLabel)}</span>` : ''}
-                  </div>
-                  ${placedMap.has('exact_score') ? '' : `
-                    <div class="pred-es-grid">
-                      ${quickScores.map((qs) => `
-                        <button type="button"
-                          class="pred-odd-btn"
-                          data-es-pick="${e(f.id)}"
-                          data-eh="${qs.h}"
-                          data-ea="${qs.a}"
-                          data-odd="${qs.odd}">
-                          <span class="pred-odd-k">${qs.score}</span>
-                          <span class="pred-odd-v">${qs.odd.toFixed(1)}</span>
+                ${activeGroup !== 'exact'
+                  ? groupMarkets.map((m) => renderMarketBlock(f, m, matchLabel)).join('')
+                  : `<div>
+                      <div class="pred-sec-lbl">
+                        <span>Популярные счета</span>
+                        <span style="font-weight:400;font-size:11px;color:#7a9183">Можно выбрать несколько вариантов</span>
+                      </div>
+                      <div class="pred-es-grid">
+                        ${quickScores.map((qs) => {
+                          const k = `${f.id}|exact_score|${qs.h}:${qs.a}`;
+                          const placed = placedByKey.get(k);
+                          const inCoupon = couponKeySet.has(k);
+                          return `
+                            <button type="button"
+                              class="pred-odd-btn ${placed ? 'betted' : inCoupon ? 'on' : ''}"
+                              ${placed ? 'disabled' : ''}
+                              data-es-pick="${e(f.id)}"
+                              data-match-label="${e(matchLabel)}"
+                              data-eh="${qs.h}"
+                              data-ea="${qs.a}"
+                              data-odd="${qs.odd}">
+                              <span class="pred-odd-k">${placed ? '✓ ' : ''}${qs.score}</span>
+                              <span class="pred-odd-v">${Number(qs.odd).toFixed(2)}</span>
+                            </button>`;
+                        }).join('')}
+                      </div>
+                      <div class="pred-es-custom">
+                        <span class="small muted">Свой счёт:</span>
+                        <input id="es_h_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" value="${customH}" data-es-inp="${e(f.id)}">
+                        <b>:</b>
+                        <input id="es_a_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" value="${customA}" data-es-inp="${e(f.id)}">
+                        <button type="button" class="btn alt sm" data-es-custom="${e(f.id)}" data-match-label="${e(matchLabel)}" style="min-height:36px">
+                          В купон (<span id="es_odd_lbl_${e(f.id)}">×${Number(customOdd).toFixed(2)}</span>)
                         </button>
-                      `).join('')}
-                    </div>
-                    <div class="pred-es-custom">
-                      <span class="small muted">Свой счёт:</span>
-                      <input id="es_h_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" value="1">
-                      <b>:</b>
-                      <input id="es_a_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" value="1">
-                      <button type="button" class="btn alt sm" data-es-custom="${e(f.id)}" style="min-height:36px">Выбрать в купон</button>
+                      </div>
                     </div>`}
-                </div>
               </div>` : ''}
-
-            <div class="pred-slip" id="slip_${e(f.id)}" style="display:none">
-              <div class="pred-slip-top">
-                <div style="min-width:0;flex:1">
-                  <div id="slip_title_${e(f.id)}" style="font-weight:700;font-size:13.5px"></div>
-                  <div id="slip_payout_${e(f.id)}" style="font-size:12px;color:#cde2d4;margin-top:2px;font-variant-numeric:tabular-nums"></div>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <button type="button" class="pred-slip-cta" data-slip-submit="${e(f.id)}">Поставить</button>
-                  <button type="button" class="btn alt sm" data-slip-clear="${e(f.id)}" style="min-height:38px;background:rgba(255,255,255,0.14);color:#fff;border:0">×</button>
-                </div>
-              </div>
-              <div id="slip_bonus_${e(f.id)}" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:#cde2d4;padding-top:6px;border-top:1px solid rgba(255,255,255,0.14)">
-                <span>Точный счёт (бонус +5 очк.):</span>
-                <input id="eh_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" placeholder="-" style="color:#10261c">
-                <span>:</span>
-                <input id="ea_${e(f.id)}" class="pred-inline-input" type="number" min="0" max="15" placeholder="-" style="color:#10261c">
-              </div>
-            </div>
 
             ${placedList.length ? `
               <div class="pred-active-bets">
+                <div class="small muted" style="font-weight:600;margin-bottom:2px">Ваши ставки на матч (${placedList.length}):</div>
                 ${placedList.map((pr: any) => `
                   <div class="pred-active-row">
                     <span>✓ ${e(pr.pickLabel)}${pr.market === 'outcome' && pr.exactHome !== null && pr.exactAway !== null ? ` (бонус ${pr.exactHome}:${pr.exactAway})` : ''}</span>
-                    <span><b>×${Number(pr.odd || 2).toFixed(2)}</b> · ${pr.stake} мон.</span>
+                    <span><b>×${Number(pr.odd || 2).toFixed(2)}</b> · ${fmtCoins(pr.stake)} мон.</span>
                   </div>
                 `).join('')}
               </div>` : ''}
           </div>`;
         }).join('')}
-      </div>`;
+      </div>`}
+    `;
   };
 
   const renderLeaguesTab = () => {
@@ -1708,7 +2006,7 @@ export async function renderPredictionsPage(app: HTMLElement) {
                 <div class="small muted">${e(p.marketTitle || 'Исход матча')}</div>
               </td>
               <td><b>×${Number(p.odd || 2).toFixed(2)}</b></td>
-              <td>${p.stake} мон.</td>
+              <td>${fmtCoins(p.stake)} мон.</td>
               <td class="l">${
                 p.status === 'won'
                   ? `<span style="color:#15803d;font-weight:700">Зашёл (${e(p.statSummary || p.actualScore || '')})</span>`
@@ -1720,9 +2018,9 @@ export async function renderPredictionsPage(app: HTMLElement) {
               }</td>
               <td>${
                 p.status === 'won'
-                  ? `+${p.pointsAwarded} очк. / +${p.coinsWon} мон.`
+                  ? `+${p.pointsAwarded} очк. / +${fmtCoins(p.coinsWon)} мон.`
                   : p.status === 'void'
-                    ? `+${p.coinsWon} мон.`
+                    ? `+${fmtCoins(p.coinsWon)} мон.`
                     : '—'
               }</td>
             </tr>`).join('')}
@@ -1730,6 +2028,71 @@ export async function renderPredictionsPage(app: HTMLElement) {
         : '<div class="empty">Вы ещё не делали ставок в этом сезоне.</div>'}
     </div>
   `;
+
+  const renderCouponHtml = () => {
+    if (!COUPON_ITEMS.length || PRED_SUBTAB !== 'matches') return '';
+    const totalStake = COUPON_ITEMS.reduce((s, it) => s + Math.max(1, Number(it.stake || 1)), 0);
+    const totalReturn = COUPON_ITEMS.reduce((s, it) => s + Math.max(1, Number(it.stake || 1)) * Number(it.odd || 1), 0);
+    const notEnough = totalStake > Number(wallet.coins || 0);
+
+    return `
+      <div class="pred-coupon-dock" id="pred_coupon_dock">
+        <div class="pred-coupon-head" id="pred_coupon_toggle">
+          <div>
+            <div style="font-weight:700;font-size:14px">Купон ставок (${COUPON_ITEMS.length} ${COUPON_ITEMS.length === 1 ? 'пункт' : COUPON_ITEMS.length < 5 ? 'пункта' : 'пунктов'})</div>
+            <div style="font-size:11.5px;color:#b8d4c2;font-variant-numeric:tabular-nums">
+              К оплате: <b>${fmtCoins(totalStake)} мон.</b> · Макс. выплата: <b style="color:#f0c419">${fmtCoins(totalReturn)} мон.</b>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:#cde2d4">${COUPON_EXPANDED ? 'Свернуть ▼' : 'Открыть ▲'}</span>
+          </div>
+        </div>
+        ${COUPON_EXPANDED ? `
+          <div class="pred-coupon-body">
+            <div class="pred-coupon-presets">
+              <span>На все пункты:</span>
+              ${[1, 2, 3, 5, 10].map((v) => `<button type="button" data-cp-all="${v}">${v} м.</button>`).join('')}
+              <button type="button" id="pred_cp_clear" style="margin-left:auto;border-color:rgba(255,140,140,0.4);color:#fecaca">Очистить</button>
+            </div>
+            ${COUPON_ITEMS.map((it, idx) => {
+              const winCoins = Math.round(it.stake * it.odd * 100) / 100;
+              const pts = Math.max(1, Math.round(it.stake * it.odd * 1.5));
+              return `
+                <div class="pred-coupon-item">
+                  <div class="pred-coupon-item-top">
+                    <div style="min-width:0;flex:1">
+                      <div style="font-size:11px;color:#b8d4c2">${e(it.matchLabel)} · ${e(it.marketTitle)}</div>
+                      <div style="font-weight:700;font-size:13px;margin-top:1px">${e(it.label)} <span style="color:#f0c419">×${Number(it.odd).toFixed(2)}</span></div>
+                    </div>
+                    <button type="button" data-cp-del="${idx}" title="Убрать пункт" style="background:none;border:0;color:#d1ded5;font-size:17px;line-height:1;cursor:pointer;padding:2px 4px">×</button>
+                  </div>
+                  <div class="pred-coupon-stake-row">
+                    <div class="pred-coupon-qty">
+                      <button type="button" data-cp-step="${idx}" data-delta="-1">−</button>
+                      <input type="number" min="1" max="500" value="${it.stake}" data-cp-input="${idx}">
+                      <button type="button" data-cp-step="${idx}" data-delta="1">+</button>
+                      ${[2, 5, 10].map((q) => `<button type="button" data-cp-set="${idx}" data-val="${q}">${q}</button>`).join('')}
+                    </div>
+                    <div style="font-size:12px;color:#d6e9dd;text-align:right">
+                      Выплата: <b style="color:#f0c419">${fmtCoins(winCoins)} м.</b> <span style="opacity:0.75">(+${pts} очк.)</span>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+          <div class="pred-coupon-foot">
+            ${notEnough
+              ? `<div style="font-size:12px;color:#fecaca">Не хватает монет: нужно ${fmtCoins(totalStake)}, на балансе ${fmtCoins(wallet.coins)}. Уменьшите ставки или посмотрите рекламу выше.</div>`
+              : ''}
+            <button type="button" class="pred-slip-cta" id="pred_cp_submit" style="width:100%;min-height:42px;font-size:13.5px;${notEnough ? 'opacity:0.55;cursor:not-allowed' : ''}" ${notEnough ? 'disabled' : ''}>
+              ${COUPON_ITEMS.length === 1
+                ? `Поставить за ${fmtCoins(totalStake)} мон.`
+                : `Поставить ${COUPON_ITEMS.length} ставок за ${fmtCoins(totalStake)} мон.`}
+            </button>
+          </div>` : ''}
+      </div>`;
+  };
 
   app.innerHTML = `
     <div class="pred-hero">
@@ -1750,7 +2113,7 @@ export async function renderPredictionsPage(app: HTMLElement) {
           </div>` : ''}
         <div class="pred-wallet">
           <div class="pred-wallet-lbl">Ваш баланс</div>
-          <div class="pred-wallet-val">${wallet.coins} мон.</div>
+          <div class="pred-wallet-val">${fmtCoins(wallet.coins)} мон.</div>
         </div>
       </div>
     </div>
@@ -1771,7 +2134,7 @@ export async function renderPredictionsPage(app: HTMLElement) {
           </span>
           <div>
             <div class="pred-ads-title">Игровая касса прогнозов</div>
-            <div class="pred-ads-sub">5 монет даётся на старте · Смотрите трансляции Adsgram и получайте монеты на ставки</div>
+            <div class="pred-ads-sub">5 монет на старте · Каждая ставка оплачивается монетами · Пополняйте баланс через Adsgram</div>
           </div>
         </div>
         <span class="small muted" style="font-weight:600;font-variant-numeric:tabular-nums">
@@ -1827,7 +2190,7 @@ export async function renderPredictionsPage(app: HTMLElement) {
       </div>
       ${PRED_SUBTAB === 'matches' ? `
         <div class="pred-stake-bar">
-          <span class="pred-stake-lbl">Ставка:</span>
+          <span class="pred-stake-lbl">Ставка по умолч.:</span>
           ${[1, 2, 3, 5, 10].map((v) => `
             <button type="button" class="pred-stake-btn ${SELECTED_STAKE === v ? 'on' : ''}" data-stake-val="${v}">${v}</button>
           `).join('')}
@@ -1835,6 +2198,7 @@ export async function renderPredictionsPage(app: HTMLElement) {
     </div>
 
     ${PRED_SUBTAB === 'matches' ? renderMatchesTab() : PRED_SUBTAB === 'leagues' ? renderLeaguesTab() : renderHistoryTab()}
+    ${renderCouponHtml()}
   `;
 
   if ((window as any).__predTimerHandle) clearInterval((window as any).__predTimerHandle);
@@ -1892,171 +2256,256 @@ export async function renderPredictionsPage(app: HTMLElement) {
     };
   });
 
-  // Active slips per fixture
-  const pendingSelectionMap = new Map<string, {
-    market: string;
-    pick: string;
-    label: string;
-    odd: number;
-    exactHome?: number;
-    exactAway?: number;
-  }>();
+  // Competition filter & search
+  app.querySelectorAll('[data-pred-comp]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      PRED_COMP_FILTER = (b as HTMLElement).dataset.predComp || 'all';
+      renderPredictionsPage(app);
+    };
+  });
 
-  const updateSlipUi = (fid: string) => {
-    const sel = pendingSelectionMap.get(fid);
-    const slip = document.getElementById(`slip_${fid}`);
-    const titleEl = document.getElementById(`slip_title_${fid}`);
-    const payoutEl = document.getElementById(`slip_payout_${fid}`);
-    const bonusRow = document.getElementById(`slip_bonus_${fid}`);
-    const submitBtn = app.querySelector(`[data-slip-submit="${fid}"]`) as HTMLButtonElement | null;
-    if (!slip || !titleEl || !payoutEl || !submitBtn) return;
+  const searchInp = document.getElementById('pred_search_inp') as HTMLInputElement | null;
+  if (searchInp) {
+    searchInp.oninput = () => {
+      PRED_SEARCH = searchInp.value;
+      const pos = searchInp.selectionStart ?? PRED_SEARCH.length;
+      renderPredictionsPage(app);
+      const nextInp = document.getElementById('pred_search_inp') as HTMLInputElement | null;
+      if (nextInp) {
+        nextInp.focus();
+        try { nextInp.setSelectionRange(pos, pos); } catch {}
+      }
+    };
+  }
 
-    if (!sel) {
-      slip.style.display = 'none';
-      return;
-    }
-
-    const winCoins = Math.max(1, Math.round(SELECTED_STAKE * sel.odd));
-    titleEl.textContent = `${sel.label} · ×${sel.odd.toFixed(2)}`;
-    payoutEl.textContent = `Ставка: ${SELECTED_STAKE} мон. → Возможная выплата: ${winCoins} мон.`;
-    submitBtn.textContent = `Поставить ${SELECTED_STAKE} мон.`;
-    if (bonusRow) bonusRow.style.display = sel.market === 'outcome' ? 'flex' : 'none';
-    slip.style.display = 'flex';
-  };
-
-  // Global stake switcher
+  // Global default stake switcher (applied to newly picked items)
   app.querySelectorAll('[data-stake-val]').forEach((b) => {
     (b as HTMLButtonElement).onclick = () => {
       SELECTED_STAKE = Number((b as HTMLElement).dataset.stakeVal || 1);
       app.querySelectorAll('[data-stake-val]').forEach((btn) => {
         btn.classList.toggle('on', Number((btn as HTMLElement).dataset.stakeVal) === SELECTED_STAKE);
       });
-      for (const fid of pendingSelectionMap.keys()) {
-        updateSlipUi(fid);
-      }
     };
   });
 
-  // Clicking any standard odd button (1X2, Total, BTTS, Double Chance, YC, Corners, Specials)
+  // Toggle any standard market odd button in/out of the multi-item coupon
   app.querySelectorAll('[data-sel-bet]').forEach((b) => {
     (b as HTMLButtonElement).onclick = () => {
       const ds = (b as HTMLElement).dataset;
       const fid = ds.selBet!;
+      const matchLabel = ds.matchLabel || '';
       const market = ds.market!;
+      const marketTitle = ds.marketTitle || '';
       const pick = ds.pick!;
       const label = ds.label || pick;
       const odd = Number(ds.odd || 2.0);
+      const key = `${fid}|${market}|${pick}`;
 
-      pendingSelectionMap.set(fid, { market, pick, label, odd });
-
-      // Highlight button inside card, clear exact score selections
-      const card = app.querySelector(`[data-fx-card="${fid}"]`);
-      card?.querySelectorAll('[data-sel-bet]').forEach((btn) => {
-        const bds = (btn as HTMLElement).dataset;
-        btn.classList.toggle('on', bds.market === market && bds.pick === pick);
-      });
-      card?.querySelectorAll('[data-es-pick]').forEach((btn) => btn.classList.remove('on'));
-      updateSlipUi(fid);
+      const idx = COUPON_ITEMS.findIndex((it) => it.key === key);
+      if (idx >= 0) {
+        COUPON_ITEMS.splice(idx, 1);
+      } else {
+        COUPON_ITEMS.push({
+          key,
+          fixtureId: fid,
+          matchLabel,
+          market,
+          marketTitle,
+          pick,
+          label,
+          odd,
+          stake: SELECTED_STAKE,
+        });
+        COUPON_EXPANDED = true;
+      }
+      renderPredictionsPage(app);
     };
   });
 
-  // Clicking a quick exact-score odd button
+  // Toggle quick exact-score odd button in/out of coupon
   app.querySelectorAll('[data-es-pick]').forEach((b) => {
     (b as HTMLButtonElement).onclick = () => {
       const ds = (b as HTMLElement).dataset;
       const fid = ds.esPick!;
+      const matchLabel = ds.matchLabel || '';
       const eh = Number(ds.eh);
       const ea = Number(ds.ea);
-      const odd = Number(ds.odd || 6.5);
+      const odd = Number(ds.odd || 6.8);
+      const key = `${fid}|exact_score|${eh}:${ea}`;
 
-      pendingSelectionMap.set(fid, {
-        market: 'exact_score',
-        pick: 'exact',
-        label: `Точный счёт ${eh}:${ea}`,
-        odd,
-        exactHome: eh,
-        exactAway: ea,
-      });
-
-      const card = app.querySelector(`[data-fx-card="${fid}"]`);
-      card?.querySelectorAll('[data-sel-bet]').forEach((btn) => btn.classList.remove('on'));
-      card?.querySelectorAll('[data-es-pick]').forEach((btn) => {
-        const bds = (btn as HTMLElement).dataset;
-        btn.classList.toggle('on', Number(bds.eh) === eh && Number(bds.ea) === ea);
-      });
-      updateSlipUi(fid);
+      const idx = COUPON_ITEMS.findIndex((it) => it.key === key);
+      if (idx >= 0) {
+        COUPON_ITEMS.splice(idx, 1);
+      } else {
+        COUPON_ITEMS.push({
+          key,
+          fixtureId: fid,
+          matchLabel,
+          market: 'exact_score',
+          marketTitle: 'Точный счёт',
+          pick: 'exact',
+          label: `Точный счёт ${eh}:${ea}`,
+          odd,
+          stake: SELECTED_STAKE,
+          exactHome: eh,
+          exactAway: ea,
+        });
+        COUPON_EXPANDED = true;
+      }
+      renderPredictionsPage(app);
     };
   });
 
-  // Custom exact score selector -> loads into slip
+  // Live exact-score custom odd preview from server matrix
+  app.querySelectorAll('[data-es-inp]').forEach((inp) => {
+    (inp as HTMLInputElement).oninput = () => {
+      const fid = (inp as HTMLElement).dataset.esInp!;
+      const fxObj = (data.fixtures || []).find((x: any) => x.id === fid);
+      const eh = Math.max(0, Math.min(15, Math.round(Number((document.getElementById(`es_h_${fid}`) as HTMLInputElement)?.value || 0))));
+      const ea = Math.max(0, Math.min(15, Math.round(Number((document.getElementById(`es_a_${fid}`) as HTMLInputElement)?.value || 0))));
+      const matOdd = fxObj?.exactMatrix?.[eh]?.[ea];
+      const estOdd = matOdd || Math.min(50.0, Math.max(6.5, 6.0 + (eh + ea) * 2.8));
+      const lbl = document.getElementById(`es_odd_lbl_${fid}`);
+      if (lbl) lbl.textContent = `×${Number(estOdd).toFixed(2)}`;
+    };
+  });
+
+  // Add custom exact score into coupon
   app.querySelectorAll('[data-es-custom]').forEach((b) => {
     (b as HTMLButtonElement).onclick = () => {
-      const fid = (b as HTMLElement).dataset.esCustom!;
+      const ds = (b as HTMLElement).dataset;
+      const fid = ds.esCustom!;
+      const matchLabel = ds.matchLabel || '';
       const eh = Math.max(0, Math.min(15, Math.round(Number((document.getElementById(`es_h_${fid}`) as HTMLInputElement)?.value || 0))));
       const ea = Math.max(0, Math.min(15, Math.round(Number((document.getElementById(`es_a_${fid}`) as HTMLInputElement)?.value || 0))));
       const fxObj = (data.fixtures || []).find((x: any) => x.id === fid);
-      const qsMatch = (fxObj?.quickScores || []).find((q: any) => q.h === eh && q.a === ea);
-      const estOdd = qsMatch ? qsMatch.odd : Math.min(35.0, Math.max(6.5, 6.0 + (eh + ea) * 2.2));
-
-      pendingSelectionMap.set(fid, {
-        market: 'exact_score',
-        pick: 'exact',
-        label: `Точный счёт ${eh}:${ea}`,
-        odd: estOdd,
-        exactHome: eh,
-        exactAway: ea,
-      });
-
-      const card = app.querySelector(`[data-fx-card="${fid}"]`);
-      card?.querySelectorAll('[data-sel-bet], [data-es-pick]').forEach((btn) => btn.classList.remove('on'));
-      updateSlipUi(fid);
-    };
-  });
-
-  // Cancel / Submit Slip
-  app.querySelectorAll('[data-slip-clear]').forEach((b) => {
-    (b as HTMLButtonElement).onclick = () => {
-      const fid = (b as HTMLElement).dataset.slipClear!;
-      pendingSelectionMap.delete(fid);
-      const card = app.querySelector(`[data-fx-card="${fid}"]`);
-      card?.querySelectorAll('[data-sel-bet], [data-es-pick]').forEach((btn) => btn.classList.remove('on'));
-      updateSlipUi(fid);
-    };
-  });
-
-  app.querySelectorAll('[data-slip-submit]').forEach((b) => {
-    (b as HTMLButtonElement).onclick = async () => {
-      const fid = (b as HTMLElement).dataset.slipSubmit!;
-      const sel = pendingSelectionMap.get(fid);
-      if (!sel) return;
-      const ehBonus = sel.market === 'outcome' ? (document.getElementById(`eh_${fid}`) as HTMLInputElement)?.value : undefined;
-      const eaBonus = sel.market === 'outcome' ? (document.getElementById(`ea_${fid}`) as HTMLInputElement)?.value : undefined;
-
-      (b as HTMLButtonElement).disabled = true;
-      try {
-        const res = await api('/predictions/bet', {
+      const matOdd = fxObj?.exactMatrix?.[eh]?.[ea];
+      const estOdd = matOdd || Math.min(50.0, Math.max(6.5, 6.0 + (eh + ea) * 2.8));
+      const key = `${fid}|exact_score|${eh}:${ea}`;
+      if (placedByKey.has(key)) {
+        toast(`Счёт ${eh}:${ea} уже поставлен в этом матче`, true);
+        return;
+      }
+      if (!COUPON_ITEMS.some((it) => it.key === key)) {
+        COUPON_ITEMS.push({
+          key,
           fixtureId: fid,
-          market: sel.market,
-          pick: sel.pick,
+          matchLabel,
+          market: 'exact_score',
+          marketTitle: 'Точный счёт',
+          pick: 'exact',
+          label: `Точный счёт ${eh}:${ea}`,
+          odd: estOdd,
           stake: SELECTED_STAKE,
-          exactHome: sel.market === 'exact_score' ? sel.exactHome : ehBonus,
-          exactAway: sel.market === 'exact_score' ? sel.exactAway : eaBonus,
+          exactHome: eh,
+          exactAway: ea,
         });
-        toast(res.message);
+        COUPON_EXPANDED = true;
+      }
+      renderPredictionsPage(app);
+    };
+  });
+
+  // Coupon interactions
+  const cpToggle = document.getElementById('pred_coupon_toggle');
+  if (cpToggle) {
+    cpToggle.onclick = () => {
+      COUPON_EXPANDED = !COUPON_EXPANDED;
+      renderPredictionsPage(app);
+    };
+  }
+  const cpClear = document.getElementById('pred_cp_clear');
+  if (cpClear) {
+    cpClear.onclick = () => {
+      COUPON_ITEMS = [];
+      renderPredictionsPage(app);
+    };
+  }
+  app.querySelectorAll('[data-cp-all]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      const v = Math.max(1, Math.min(500, Number((b as HTMLElement).dataset.cpAll || 1)));
+      COUPON_ITEMS.forEach((it) => { it.stake = v; });
+      renderPredictionsPage(app);
+    };
+  });
+  app.querySelectorAll('[data-cp-del]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      const idx = Number((b as HTMLElement).dataset.cpDel);
+      COUPON_ITEMS.splice(idx, 1);
+      renderPredictionsPage(app);
+    };
+  });
+  app.querySelectorAll('[data-cp-step]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      const idx = Number((b as HTMLElement).dataset.cpStep);
+      const delta = Number((b as HTMLElement).dataset.delta || 0);
+      if (COUPON_ITEMS[idx]) {
+        COUPON_ITEMS[idx].stake = Math.max(1, Math.min(500, COUPON_ITEMS[idx].stake + delta));
         renderPredictionsPage(app);
-      } catch (err: any) {
-        toast(err?.message || 'Ошибка ставки', true);
-        (b as HTMLButtonElement).disabled = false;
+      }
+    };
+  });
+  app.querySelectorAll('[data-cp-set]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      const idx = Number((b as HTMLElement).dataset.cpSet);
+      const val = Number((b as HTMLElement).dataset.val || 1);
+      if (COUPON_ITEMS[idx]) {
+        COUPON_ITEMS[idx].stake = Math.max(1, Math.min(500, val));
+        renderPredictionsPage(app);
+      }
+    };
+  });
+  app.querySelectorAll('[data-cp-input]').forEach((inp) => {
+    (inp as HTMLInputElement).onchange = () => {
+      const idx = Number((inp as HTMLElement).dataset.cpInput);
+      const val = Math.max(1, Math.min(500, Math.round(Number((inp as HTMLInputElement).value || 1))));
+      if (COUPON_ITEMS[idx]) {
+        COUPON_ITEMS[idx].stake = val;
+        renderPredictionsPage(app);
       }
     };
   });
 
-  // Expand / Collapse additional markets
+  const cpSubmit = document.getElementById('pred_cp_submit') as HTMLButtonElement | null;
+  if (cpSubmit) {
+    cpSubmit.onclick = async () => {
+      if (!COUPON_ITEMS.length) return;
+      cpSubmit.disabled = true;
+      try {
+        const res = await api('/predictions/bet-batch', {
+          bets: COUPON_ITEMS.map((it) => ({
+            fixtureId: it.fixtureId,
+            market: it.market,
+            pick: it.pick,
+            stake: it.stake,
+            exactHome: it.exactHome,
+            exactAway: it.exactAway,
+          })),
+        });
+        toast(res.message);
+        COUPON_ITEMS = [];
+        renderPredictionsPage(app);
+      } catch (err: any) {
+        toast(err?.message || 'Ошибка оформления купона', true);
+        cpSubmit.disabled = false;
+      }
+    };
+  }
+
+  // Expand / Collapse full bookmaker rospis & switch category tabs
   app.querySelectorAll('[data-toggle-mk]').forEach((b) => {
     (b as HTMLButtonElement).onclick = () => {
       const fid = (b as HTMLElement).dataset.toggleMk!;
       if (OPEN_MARKETS_FIXTURES.has(fid)) OPEN_MARKETS_FIXTURES.delete(fid);
       else OPEN_MARKETS_FIXTURES.add(fid);
+      renderPredictionsPage(app);
+    };
+  });
+
+  app.querySelectorAll('[data-fx-group]').forEach((b) => {
+    (b as HTMLButtonElement).onclick = () => {
+      const ds = (b as HTMLElement).dataset;
+      FIXTURE_ACTIVE_GROUP.set(ds.fxGroup!, ds.group || 'main');
       renderPredictionsPage(app);
     };
   });

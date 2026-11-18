@@ -299,6 +299,8 @@ export interface AdServerContext {
   getSiteUrl?: () => string;
 }
 
+export type PredictionMarketGroup = 'main' | 'goals' | 'halves' | 'stats' | 'exact';
+
 export interface PredictionMarketOption {
   pick: string;
   label: string;
@@ -309,6 +311,7 @@ export interface PredictionMarketOption {
 
 export interface PredictionMarketDef {
   id: string;
+  group: PredictionMarketGroup;
   title: string;
   subtitle: string;
   options: PredictionMarketOption[];
@@ -317,77 +320,406 @@ export interface PredictionMarketDef {
 export const PREDICTION_MARKETS: PredictionMarketDef[] = [
   {
     id: 'outcome',
+    group: 'main',
     title: 'Исход матча',
-    subtitle: 'Основное время (П1 / Ничья / П2)',
+    subtitle: 'Основное время (П1 / Х / П2)',
     options: [
-      { pick: '1', label: 'П1 (Хозяева)', shortLabel: 'П1', odd: 2.0, basePts: 3 },
-      { pick: 'X', label: 'Ничья (Х)', shortLabel: 'Х', odd: 3.0, basePts: 4 },
-      { pick: '2', label: 'П2 (Гости)', shortLabel: 'П2', odd: 2.2, basePts: 3 },
+      { pick: '1', label: 'П1 (Хозяева)', shortLabel: 'П1', odd: 2.15, basePts: 3 },
+      { pick: 'X', label: 'Ничья (Х)', shortLabel: 'Х', odd: 3.30, basePts: 5 },
+      { pick: '2', label: 'П2 (Гости)', shortLabel: 'П2', odd: 3.45, basePts: 5 },
     ],
   },
   {
     id: 'double_chance',
+    group: 'main',
     title: 'Двойной шанс',
     subtitle: 'Перестраховка исхода',
     options: [
-      { pick: '1X', label: '1Х (Хозяева не проиграют)', shortLabel: '1Х', odd: 1.4, basePts: 2 },
-      { pick: '12', label: '12 (Без ничьей)', shortLabel: '12', odd: 1.35, basePts: 2 },
-      { pick: 'X2', label: 'Х2 (Гости не проиграют)', shortLabel: 'Х2', odd: 1.45, basePts: 2 },
+      { pick: '1X', label: '1Х (Хозяева не проиграют)', shortLabel: '1Х', odd: 1.31, basePts: 2 },
+      { pick: '12', label: '12 (Без ничьей)', shortLabel: '12', odd: 1.32, basePts: 2 },
+      { pick: 'X2', label: 'Х2 (Гости не проиграют)', shortLabel: 'Х2', odd: 1.69, basePts: 3 },
+    ],
+  },
+  {
+    id: 'hcp_0',
+    group: 'main',
+    title: 'Фора (0)',
+    subtitle: 'Возврат ставки при ничьей',
+    options: [
+      { pick: 'f1_0', label: 'Фора 1 (0)', shortLabel: 'Ф1 (0)', odd: 1.54, basePts: 2 },
+      { pick: 'f2_0', label: 'Фора 2 (0)', shortLabel: 'Ф2 (0)', odd: 2.48, basePts: 4 },
+    ],
+  },
+  {
+    id: 'hcp_m10',
+    group: 'main',
+    title: 'Фора (-1.0 / +1.0)',
+    subtitle: 'Возврат при разнице ровно 1 мяч',
+    options: [
+      { pick: 'f1_m10', label: 'Фора 1 (-1.0)', shortLabel: 'Ф1 (-1.0)', odd: 3.15, basePts: 5 },
+      { pick: 'f2_p10', label: 'Фора 2 (+1.0)', shortLabel: 'Ф2 (+1.0)', odd: 1.36, basePts: 2 },
+    ],
+  },
+  {
+    id: 'hcp_m15',
+    group: 'main',
+    title: 'Фора (-1.5 / +1.5)',
+    subtitle: 'Победа в 2+ гола или удержание',
+    options: [
+      { pick: 'f1_m15', label: 'Фора 1 (-1.5)', shortLabel: 'Ф1 (-1.5)', odd: 3.85, basePts: 6 },
+      { pick: 'f2_p15', label: 'Фора 2 (+1.5)', shortLabel: 'Ф2 (+1.5)', odd: 1.26, basePts: 2 },
+    ],
+  },
+  {
+    id: 'hcp_p10',
+    group: 'main',
+    title: 'Фора (+1.0 / -1.0)',
+    subtitle: 'Возврат при победе гостей в 1 мяч',
+    options: [
+      { pick: 'f1_p10', label: 'Фора 1 (+1.0)', shortLabel: 'Ф1 (+1.0)', odd: 1.19, basePts: 2 },
+      { pick: 'f2_m10', label: 'Фора 2 (-1.0)', shortLabel: 'Ф2 (-1.0)', odd: 4.80, basePts: 7 },
+    ],
+  },
+  {
+    id: 'hcp_p15',
+    group: 'main',
+    title: 'Фора (+1.5 / -1.5)',
+    subtitle: 'Удержание хозяев или разгром гостей',
+    options: [
+      { pick: 'f1_p15', label: 'Фора 1 (+1.5)', shortLabel: 'Ф1 (+1.5)', odd: 1.14, basePts: 2 },
+      { pick: 'f2_m15', label: 'Фора 2 (-1.5)', shortLabel: 'Ф2 (-1.5)', odd: 5.60, basePts: 8 },
+    ],
+  },
+  {
+    id: 'total_1_5',
+    group: 'main',
+    title: 'Тотал голов 1.5',
+    subtitle: 'Суммарно забито в матче',
+    options: [
+      { pick: 'over_1_5', label: 'Тотал больше 1.5', shortLabel: 'ТБ 1.5', odd: 1.32, basePts: 2 },
+      { pick: 'under_1_5', label: 'Тотал меньше 1.5', shortLabel: 'ТМ 1.5', odd: 3.35, basePts: 5 },
+    ],
+  },
+  {
+    id: 'total_2_0',
+    group: 'main',
+    title: 'Тотал голов 2.0',
+    subtitle: 'Возврат при ровно 2 голах',
+    options: [
+      { pick: 'over_2_0', label: 'Тотал больше 2.0', shortLabel: 'ТБ 2.0', odd: 1.52, basePts: 2 },
+      { pick: 'under_2_0', label: 'Тотал меньше 2.0', shortLabel: 'ТМ 2.0', odd: 2.52, basePts: 4 },
     ],
   },
   {
     id: 'total_goals',
-    title: 'Тотал голов',
-    subtitle: 'Суммарно забито в матче',
+    group: 'main',
+    title: 'Тотал голов 2.5',
+    subtitle: 'Классический тотал матча',
     options: [
-      { pick: 'over_2_5', label: 'Тотал больше 2.5 (ТБ 2.5)', shortLabel: 'ТБ 2.5', odd: 1.9, basePts: 3 },
-      { pick: 'under_2_5', label: 'Тотал меньше 2.5 (ТМ 2.5)', shortLabel: 'ТМ 2.5', odd: 1.9, basePts: 3 },
+      { pick: 'over_2_5', label: 'Тотал больше 2.5', shortLabel: 'ТБ 2.5', odd: 1.94, basePts: 3 },
+      { pick: 'under_2_5', label: 'Тотал меньше 2.5', shortLabel: 'ТМ 2.5', odd: 1.88, basePts: 3 },
+    ],
+  },
+  {
+    id: 'total_3_0',
+    group: 'main',
+    title: 'Тотал голов 3.0',
+    subtitle: 'Возврат при ровно 3 голах',
+    options: [
+      { pick: 'over_3_0', label: 'Тотал больше 3.0', shortLabel: 'ТБ 3.0', odd: 2.68, basePts: 4 },
+      { pick: 'under_3_0', label: 'Тотал меньше 3.0', shortLabel: 'ТМ 3.0', odd: 1.47, basePts: 2 },
+    ],
+  },
+  {
+    id: 'total_3_5',
+    group: 'main',
+    title: 'Тотал голов 3.5',
+    subtitle: 'Верховой или закрытый матч',
+    options: [
+      { pick: 'over_3_5', label: 'Тотал больше 3.5', shortLabel: 'ТБ 3.5', odd: 3.30, basePts: 5 },
+      { pick: 'under_3_5', label: 'Тотал меньше 3.5', shortLabel: 'ТМ 3.5', odd: 1.33, basePts: 2 },
     ],
   },
   {
     id: 'btts',
+    group: 'main',
     title: 'Обе забьют',
-    subtitle: 'Забьют ли обе команды',
+    subtitle: 'Голы обеих команд в матче',
     options: [
-      { pick: 'yes', label: 'Обе забьют: Да', shortLabel: 'ОЗ Да', odd: 1.85, basePts: 3 },
-      { pick: 'no', label: 'Обе забьют: Нет', shortLabel: 'ОЗ Нет', odd: 1.95, basePts: 3 },
+      { pick: 'yes', label: 'Обе забьют: Да', shortLabel: 'ОЗ Да', odd: 1.86, basePts: 3 },
+      { pick: 'no', label: 'Обе забьют: Нет', shortLabel: 'ОЗ Нет', odd: 1.94, basePts: 3 },
     ],
   },
   {
-    id: 'yellow_cards',
-    title: 'Жёлтые карточки',
-    subtitle: 'Предупреждения в матче',
+    id: 'it1_0_5',
+    group: 'goals',
+    title: 'Инд. тотал Хозяев 0.5',
+    subtitle: 'Забьют ли хозяева',
     options: [
-      { pick: 'over_3_5', label: 'ЖК больше 3.5', shortLabel: 'ЖК > 3.5', odd: 1.95, basePts: 3 },
-      { pick: 'under_3_5', label: 'ЖК меньше 3.5', shortLabel: 'ЖК < 3.5', odd: 1.85, basePts: 3 },
+      { pick: 'over_0_5', label: 'ИТ1 Б 0.5', shortLabel: 'ИТ1 Б 0.5', odd: 1.24, basePts: 2 },
+      { pick: 'under_0_5', label: 'ИТ1 М 0.5', shortLabel: 'ИТ1 М 0.5', odd: 4.00, basePts: 6 },
+    ],
+  },
+  {
+    id: 'it1_1_5',
+    group: 'goals',
+    title: 'Инд. тотал Хозяев 1.5',
+    subtitle: '2+ гола хозяев',
+    options: [
+      { pick: 'over_1_5', label: 'ИТ1 Б 1.5', shortLabel: 'ИТ1 Б 1.5', odd: 2.18, basePts: 3 },
+      { pick: 'under_1_5', label: 'ИТ1 М 1.5', shortLabel: 'ИТ1 М 1.5', odd: 1.67, basePts: 3 },
+    ],
+  },
+  {
+    id: 'it2_0_5',
+    group: 'goals',
+    title: 'Инд. тотал Гостей 0.5',
+    subtitle: 'Забьют ли гости',
+    options: [
+      { pick: 'over_0_5', label: 'ИТ2 Б 0.5', shortLabel: 'ИТ2 Б 0.5', odd: 1.41, basePts: 2 },
+      { pick: 'under_0_5', label: 'ИТ2 М 0.5', shortLabel: 'ИТ2 М 0.5', odd: 2.86, basePts: 4 },
+    ],
+  },
+  {
+    id: 'it2_1_5',
+    group: 'goals',
+    title: 'Инд. тотал Гостей 1.5',
+    subtitle: '2+ гола гостей',
+    options: [
+      { pick: 'over_1_5', label: 'ИТ2 Б 1.5', shortLabel: 'ИТ2 Б 1.5', odd: 3.10, basePts: 5 },
+      { pick: 'under_1_5', label: 'ИТ2 М 1.5', shortLabel: 'ИТ2 М 1.5', odd: 1.36, basePts: 2 },
+    ],
+  },
+  {
+    id: 'first_goal',
+    group: 'goals',
+    title: 'Первый гол в матче',
+    subtitle: 'Кто откроет счёт',
+    options: [
+      { pick: 'home', label: 'Первый гол: Хозяева', shortLabel: '1-й гол К1', odd: 1.78, basePts: 3 },
+      { pick: 'none', label: 'Голов не будет (0:0)', shortLabel: 'Без голов', odd: 9.50, basePts: 14 },
+      { pick: 'away', label: 'Первый гол: Гости', shortLabel: '1-й гол К2', odd: 2.34, basePts: 4 },
+    ],
+  },
+  {
+    id: 'both_halves_goal',
+    group: 'goals',
+    title: 'Голы в обоих таймах',
+    subtitle: 'Минимум по 1 голу в 1Т и 2Т',
+    options: [
+      { pick: 'yes', label: 'Голы в обоих таймах: Да', shortLabel: 'Оба тайма Да', odd: 1.82, basePts: 3 },
+      { pick: 'no', label: 'Голы в обоих таймах: Нет', shortLabel: 'Оба тайма Нет', odd: 1.98, basePts: 3 },
+    ],
+  },
+  {
+    id: 'combo_w_total',
+    group: 'goals',
+    title: 'Комбо: Исход + Тотал',
+    subtitle: 'Двойное условие на матч',
+    options: [
+      { pick: '1_over15', label: 'П1 и ТБ 1.5', shortLabel: 'П1 и ТБ 1.5', odd: 2.65, basePts: 4 },
+      { pick: '1_over25', label: 'П1 и ТБ 2.5', shortLabel: 'П1 и ТБ 2.5', odd: 3.40, basePts: 5 },
+      { pick: '1_under25', label: 'П1 и ТМ 2.5', shortLabel: 'П1 и ТМ 2.5', odd: 4.50, basePts: 7 },
+      { pick: '2_over15', label: 'П2 и ТБ 1.5', shortLabel: 'П2 и ТБ 1.5', odd: 4.30, basePts: 6 },
+      { pick: '2_over25', label: 'П2 и ТБ 2.5', shortLabel: 'П2 и ТБ 2.5', odd: 5.50, basePts: 8 },
+      { pick: '2_under25', label: 'П2 и ТМ 2.5', shortLabel: 'П2 и ТМ 2.5', odd: 6.40, basePts: 10 },
+      { pick: '1x_over15', label: '1Х и ТБ 1.5', shortLabel: '1Х и ТБ 1.5', odd: 1.72, basePts: 3 },
+      { pick: 'x2_over15', label: 'Х2 и ТБ 1.5', shortLabel: 'Х2 и ТБ 1.5', odd: 2.32, basePts: 3 },
+      { pick: 'x_under25', label: 'Ничья и ТМ 2.5', shortLabel: 'Х и ТМ 2.5', odd: 4.10, basePts: 6 },
+    ],
+  },
+  {
+    id: 'combo_w_btts',
+    group: 'goals',
+    title: 'Комбо: Исход + Обе забьют',
+    subtitle: 'Исход с условием по голам обеих команд',
+    options: [
+      { pick: '1_btts_y', label: 'П1 и ОЗ — Да', shortLabel: 'П1 и ОЗ Да', odd: 4.10, basePts: 6 },
+      { pick: '1_btts_n', label: 'П1 и ОЗ — Нет', shortLabel: 'П1 и ОЗ Нет', odd: 3.45, basePts: 5 },
+      { pick: '2_btts_y', label: 'П2 и ОЗ — Да', shortLabel: 'П2 и ОЗ Да', odd: 6.20, basePts: 9 },
+      { pick: '2_btts_n', label: 'П2 и ОЗ — Нет', shortLabel: 'П2 и ОЗ Нет', odd: 5.40, basePts: 8 },
+      { pick: '1x_btts_y', label: '1Х и ОЗ — Да', shortLabel: '1Х и ОЗ Да', odd: 2.38, basePts: 4 },
+      { pick: 'x2_btts_y', label: 'Х2 и ОЗ — Да', shortLabel: 'Х2 и ОЗ Да', odd: 2.95, basePts: 4 },
+    ],
+  },
+  {
+    id: 'ht_outcome',
+    group: 'halves',
+    title: '1-й тайм: Исход',
+    subtitle: 'Результат к перерыву',
+    options: [
+      { pick: '1', label: '1-й тайм: П1', shortLabel: '1Т П1', odd: 2.75, basePts: 4 },
+      { pick: 'X', label: '1-й тайм: Ничья', shortLabel: '1Т Х', odd: 2.12, basePts: 3 },
+      { pick: '2', label: '1-й тайм: П2', shortLabel: '1Т П2', odd: 3.95, basePts: 6 },
+    ],
+  },
+  {
+    id: 'ht_total_0_5',
+    group: 'halves',
+    title: '1-й тайм: Тотал 0.5',
+    subtitle: 'Голы до перерыва',
+    options: [
+      { pick: 'over_0_5', label: '1Т Тотал больше 0.5', shortLabel: '1Т ТБ 0.5', odd: 1.42, basePts: 2 },
+      { pick: 'under_0_5', label: '1Т Тотал меньше 0.5', shortLabel: '1Т ТМ 0.5', odd: 2.82, basePts: 4 },
+    ],
+  },
+  {
+    id: 'ht_total_1_5',
+    group: 'halves',
+    title: '1-й тайм: Тотал 1.5',
+    subtitle: 'Результативный 1-й тайм',
+    options: [
+      { pick: 'over_1_5', label: '1Т Тотал больше 1.5', shortLabel: '1Т ТБ 1.5', odd: 2.95, basePts: 4 },
+      { pick: 'under_1_5', label: '1Т Тотал меньше 1.5', shortLabel: '1Т ТМ 1.5', odd: 1.39, basePts: 2 },
+    ],
+  },
+  {
+    id: 'ht_ft',
+    group: 'halves',
+    title: 'Тайм / Матч',
+    subtitle: 'Исход 1-го тайма и всего матча',
+    options: [
+      { pick: '1_1', label: 'Тайм/Матч: П1 / П1', shortLabel: 'П1/П1', odd: 3.30, basePts: 5 },
+      { pick: 'X_1', label: 'Тайм/Матч: Х / П1', shortLabel: 'Х/П1', odd: 5.20, basePts: 8 },
+      { pick: '2_1', label: 'Тайм/Матч: П2 / П1', shortLabel: 'П2/П1', odd: 26.0, basePts: 35 },
+      { pick: '1_X', label: 'Тайм/Матч: П1 / Х', shortLabel: 'П1/Х', odd: 14.5, basePts: 20 },
+      { pick: 'X_X', label: 'Тайм/Матч: Х / Х', shortLabel: 'Х/Х', odd: 5.10, basePts: 8 },
+      { pick: '2_X', label: 'Тайм/Матч: П2 / Х', shortLabel: 'П2/Х', odd: 15.5, basePts: 22 },
+      { pick: '1_2', label: 'Тайм/Матч: П1 / П2', shortLabel: 'П1/П2', odd: 32.0, basePts: 40 },
+      { pick: 'X_2', label: 'Тайм/Матч: Х / П2', shortLabel: 'Х/П2', odd: 7.50, basePts: 11 },
+      { pick: '2_2', label: 'Тайм/Матч: П2 / П2', shortLabel: 'П2/П2', odd: 5.60, basePts: 8 },
     ],
   },
   {
     id: 'corners',
-    title: 'Угловые',
-    subtitle: 'Количество подач с угла поля',
+    group: 'stats',
+    title: 'Угловые: Тотал 8.5',
+    subtitle: 'Подачи с угла поля',
     options: [
-      { pick: 'over_8_5', label: 'Угловых больше 8.5', shortLabel: 'Угл > 8.5', odd: 1.9, basePts: 3 },
-      { pick: 'under_8_5', label: 'Угловых меньше 8.5', shortLabel: 'Угл < 8.5', odd: 1.9, basePts: 3 },
+      { pick: 'over_8_5', label: 'Угловых больше 8.5', shortLabel: 'Угл Б 8.5', odd: 1.78, basePts: 3 },
+      { pick: 'under_8_5', label: 'Угловых меньше 8.5', shortLabel: 'Угл М 8.5', odd: 2.02, basePts: 3 },
+    ],
+  },
+  {
+    id: 'corners_9_5',
+    group: 'stats',
+    title: 'Угловые: Тотал 9.5',
+    subtitle: 'Повышенный тотал угловых',
+    options: [
+      { pick: 'over_9_5', label: 'Угловых больше 9.5', shortLabel: 'Угл Б 9.5', odd: 2.18, basePts: 3 },
+      { pick: 'under_9_5', label: 'Угловых меньше 9.5', shortLabel: 'Угл М 9.5', odd: 1.67, basePts: 3 },
+    ],
+  },
+  {
+    id: 'corners_outcome',
+    group: 'stats',
+    title: 'Угловые: Исход',
+    subtitle: 'Кто подаст больше угловых',
+    options: [
+      { pick: '1', label: 'Угловые: П1', shortLabel: 'Угл П1', odd: 1.74, basePts: 3 },
+      { pick: 'X', label: 'Угловые: Ничья', shortLabel: 'Угл Х', odd: 7.20, basePts: 11 },
+      { pick: '2', label: 'Угловые: П2', shortLabel: 'Угл П2', odd: 2.48, basePts: 4 },
+    ],
+  },
+  {
+    id: 'yellow_cards',
+    group: 'stats',
+    title: 'Жёлтые карточки: Тотал 3.5',
+    subtitle: 'Всего предупреждений в матче',
+    options: [
+      { pick: 'over_3_5', label: 'ЖК больше 3.5', shortLabel: 'ЖК Б 3.5', odd: 1.72, basePts: 3 },
+      { pick: 'under_3_5', label: 'ЖК меньше 3.5', shortLabel: 'ЖК М 3.5', odd: 2.10, basePts: 3 },
+    ],
+  },
+  {
+    id: 'yc_4_5',
+    group: 'stats',
+    title: 'Жёлтые карточки: Тотал 4.5',
+    subtitle: 'Жёсткая игра и споры',
+    options: [
+      { pick: 'over_4_5', label: 'ЖК больше 4.5', shortLabel: 'ЖК Б 4.5', odd: 2.38, basePts: 4 },
+      { pick: 'under_4_5', label: 'ЖК меньше 4.5', shortLabel: 'ЖК М 4.5', odd: 1.58, basePts: 2 },
+    ],
+  },
+  {
+    id: 'sot_7_5',
+    group: 'stats',
+    title: 'Удары в створ: Тотал 7.5',
+    subtitle: 'Точные удары обеих команд',
+    options: [
+      { pick: 'over_7_5', label: 'Удары в створ больше 7.5', shortLabel: 'Створ Б 7.5', odd: 1.65, basePts: 2 },
+      { pick: 'under_7_5', label: 'Удары в створ меньше 7.5', shortLabel: 'Створ М 7.5', odd: 2.22, basePts: 3 },
+    ],
+  },
+  {
+    id: 'sot_9_5',
+    group: 'stats',
+    title: 'Удары в створ: Тотал 9.5',
+    subtitle: 'Открытый атакующий футбол',
+    options: [
+      { pick: 'over_9_5', label: 'Удары в створ больше 9.5', shortLabel: 'Створ Б 9.5', odd: 2.36, basePts: 4 },
+      { pick: 'under_9_5', label: 'Удары в створ меньше 9.5', shortLabel: 'Створ М 9.5', odd: 1.59, basePts: 2 },
+    ],
+  },
+  {
+    id: 'fouls_21_5',
+    group: 'stats',
+    title: 'Фолы: Тотал 21.5',
+    subtitle: 'Нарушения правил в матче',
+    options: [
+      { pick: 'over_21_5', label: 'Фолов больше 21.5', shortLabel: 'Фолы Б 21.5', odd: 1.85, basePts: 3 },
+      { pick: 'under_21_5', label: 'Фолов меньше 21.5', shortLabel: 'Фолы М 21.5', odd: 1.95, basePts: 3 },
+    ],
+  },
+  {
+    id: 'penalty_yn',
+    group: 'stats',
+    title: 'Пенальти в матче',
+    subtitle: 'Будет ли назначен 11-метровый',
+    options: [
+      { pick: 'yes', label: 'Пенальти: Да', shortLabel: 'Пенальти Да', odd: 3.40, basePts: 5 },
+      { pick: 'no', label: 'Пенальти: Нет', shortLabel: 'Пенальти Нет', odd: 1.31, basePts: 2 },
+    ],
+  },
+  {
+    id: 'red_yn',
+    group: 'stats',
+    title: 'Удаление (КК) в матче',
+    subtitle: 'Покажет ли арбитр красную карточку',
+    options: [
+      { pick: 'yes', label: 'Удаление: Да', shortLabel: 'КК Да', odd: 4.80, basePts: 7 },
+      { pick: 'no', label: 'Удаление: Нет', shortLabel: 'КК Нет', odd: 1.18, basePts: 2 },
+    ],
+  },
+  {
+    id: 'goal_75_yn',
+    group: 'stats',
+    title: 'Гол на 75+ минуте',
+    subtitle: 'Забитый мяч в концовке (75-90+ мин)',
+    options: [
+      { pick: 'yes', label: 'Гол на 75+ мин: Да', shortLabel: 'Гол 75+ Да', odd: 2.16, basePts: 3 },
+      { pick: 'no', label: 'Гол на 75+ мин: Нет', shortLabel: 'Гол 75+ Нет', odd: 1.69, basePts: 3 },
     ],
   },
   {
     id: 'specials',
-    title: 'События матча',
-    subtitle: 'Специальные игровые ситуации',
+    group: 'stats',
+    title: 'Спецсобытия (архив)',
+    subtitle: 'Совместимость со старыми ставками',
     options: [
-      { pick: 'penalty_yes', label: 'Будет назначен пенальти', shortLabel: 'Пенальти', odd: 3.2, basePts: 5 },
-      { pick: 'red_yes', label: 'Будет удаление (КК)', shortLabel: 'Красная', odd: 4.0, basePts: 6 },
-      { pick: 'goal_75_plus', label: 'Гол на 75+ минуте', shortLabel: 'Гол 75+', odd: 2.3, basePts: 4 },
-      { pick: 'ht_draw', label: 'Ничья в 1-м тайме', shortLabel: 'Ничья 1Т', odd: 2.2, basePts: 4 },
+      { pick: 'penalty_yes', label: 'Будет назначен пенальти', shortLabel: 'Пенальти', odd: 3.40, basePts: 5 },
+      { pick: 'red_yes', label: 'Будет удаление (КК)', shortLabel: 'Красная', odd: 4.80, basePts: 7 },
+      { pick: 'goal_75_plus', label: 'Гол на 75+ минуте', shortLabel: 'Гол 75+', odd: 2.16, basePts: 3 },
+      { pick: 'ht_draw', label: 'Ничья в 1-м тайме', shortLabel: 'Ничья 1Т', odd: 2.12, basePts: 3 },
     ],
   },
   {
     id: 'exact_score',
+    group: 'exact',
     title: 'Точный счёт',
-    subtitle: 'Угадайте итоговый счёт',
+    subtitle: 'Итоговый счёт основного времени',
     options: [
-      { pick: 'exact', label: 'Точный счёт', shortLabel: 'Точн. счёт', odd: 6.0, basePts: 10 },
+      { pick: 'exact', label: 'Точный счёт', shortLabel: 'Точн. счёт', odd: 6.80, basePts: 10 },
     ],
   },
 ];
@@ -404,17 +736,42 @@ function clampNum(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
 }
 
+function roundCoins(v: number): number {
+  return Math.round(Number(v || 0) * 100) / 100;
+}
+
 function roundBookieOdd(raw: number): number {
-  const clamped = clampNum(raw, 1.12, 35.0);
-  if (clamped < 1.5) return Math.round(clamped * 50) / 50;
-  if (clamped < 3.0) return Math.round(clamped * 20) / 20;
-  if (clamped < 6.0) return Math.round(clamped * 10) / 10;
+  const clamped = clampNum(raw, 1.04, 50.0);
+  if (clamped < 2.0) return Math.round(clamped * 100) / 100;
+  if (clamped < 3.5) return Math.round(clamped * 50) / 50;
+  if (clamped < 7.0) return Math.round(clamped * 20) / 20;
+  if (clamped < 15.0) return Math.round(clamped * 10) / 10;
   return Math.round(clamped * 2) / 2;
 }
 
-function oddFromProb(prob: number, margin = 1.06, minOdd = 1.12, maxOdd = 35.0): number {
-  const p = clampNum(prob, 0.02, 0.92);
+function oddFromProb(prob: number, margin = 1.055, minOdd = 1.04, maxOdd = 50.0): number {
+  const p = clampNum(prob, 0.012, 0.955);
   return roundBookieOdd(clampNum(1 / (p * margin), minOdd, maxOdd));
+}
+
+function pairOddsFromProbs(pA: number, pB: number, margin = 1.058): [number, number] {
+  const sum = pA + pB;
+  if (sum <= 0.0001) return [1.90, 1.90];
+  const nA = clampNum(pA / sum, 0.03, 0.96);
+  const nB = 1 - nA;
+  return [
+    oddFromProb(nA, margin, 1.05, 28.0),
+    oddFromProb(nB, margin, 1.05, 28.0),
+  ];
+}
+
+function tripleOddsFromProbs(pA: number, pB: number, pC: number, margin = 1.065): [number, number, number] {
+  const sum = Math.max(0.001, pA + pB + pC);
+  return [
+    oddFromProb(pA / sum, margin, 1.08, 32.0),
+    oddFromProb(pB / sum, margin, 1.08, 32.0),
+    oddFromProb(pC / sum, margin, 1.08, 32.0),
+  ];
 }
 
 function poissonP(k: number, lambda: number): number {
@@ -423,20 +780,78 @@ function poissonP(k: number, lambda: number): number {
   return res;
 }
 
-function getTeamFormAndStrength(ctx: AdServerContext, teamId: string): { ovr: number; attOvr: number; defOvr: number; formDelta: number; style: string; compTier: number } {
+function poissonCDF(maxK: number, lambda: number): number {
+  let s = 0;
+  for (let k = 0; k <= maxK; k++) s += poissonP(k, lambda);
+  return clampNum(s, 0, 1);
+}
+
+function buildPoissonGrid(lambdaH: number, lambdaA: number, maxG = 7): number[][] {
+  const grid: number[][] = [];
+  let sumGrid = 0;
+  for (let h = 0; h <= maxG; h++) {
+    grid[h] = [];
+    for (let a = 0; a <= maxG; a++) {
+      let p = poissonP(h, lambdaH) * poissonP(a, lambdaA);
+      // Dixon-Coles low-score dependence adjustment
+      if (h === 0 && a === 0) p *= 1.09;
+      else if (h === 1 && a === 1) p *= 1.07;
+      else if ((h === 1 && a === 0) || (h === 0 && a === 1)) p *= 0.96;
+      grid[h][a] = p;
+      sumGrid += p;
+    }
+  }
+  for (let h = 0; h <= maxG; h++) {
+    for (let a = 0; a <= maxG; a++) grid[h][a] /= sumGrid;
+  }
+  return grid;
+}
+
+function getTeamFormAndStrength(
+  ctx: AdServerContext,
+  teamId: string,
+  fixture?: any
+): {
+  ovr: number;
+  attOvr: number;
+  defOvr: number;
+  formDelta: number;
+  budgetEdge: number;
+  style: string;
+  compTier: number;
+} {
   const db = ctx.getDb();
   const t = ctx.team(teamId);
   const comp = String(t?.comp || 'rpl');
-  const compTier = comp === 'rpl' ? 0 : comp === 'fnl' ? -5.5 : -7.5;
+  const compTier = comp === 'rpl' ? 0 : comp === 'fnl' ? -5.8 : -7.8;
 
   const players = (Array.isArray(db.players) ? db.players : []).filter((p: any) => p.teamId === teamId && !p.archived);
-  const ovrs = players
-    .map((p: any) => Number(p.ovr || p.rating || 70))
-    .filter((n: number) => Number.isFinite(n) && n > 0)
-    .sort((a: number, b: number) => b - a)
-    .slice(0, 14);
+  const playerById = new Map<string, any>(players.map((p: any) => [p.id, p]));
+
+  // Prefer submitted match lineup if present
+  const lineupObj = fixture?.id ? db.lineups?.[`${fixture.id}:${teamId}`] : null;
+  const starterIds: string[] = Array.isArray(lineupObj?.starters) ? lineupObj.starters : [];
+  let xiRatings: number[] = [];
+  if (starterIds.length >= 9) {
+    xiRatings = starterIds
+      .map((pid) => Number(playerById.get(pid)?.ovr || playerById.get(pid)?.rating || 0))
+      .filter((n) => Number.isFinite(n) && n > 0);
+  }
+  if (xiRatings.length < 9) {
+    const gks = players
+      .filter((p: any) => String(p.pos || '') === 'ВР' || String(p.pos || '') === 'GK')
+      .map((p: any) => Number(p.ovr || p.rating || 70))
+      .sort((a: number, b: number) => b - a)
+      .slice(0, 1);
+    const outfield = players
+      .filter((p: any) => String(p.pos || '') !== 'ВР' && String(p.pos || '') !== 'GK')
+      .map((p: any) => Number(p.ovr || p.rating || 70))
+      .sort((a: number, b: number) => b - a)
+      .slice(0, 10);
+    xiRatings = [...gks, ...outfield];
+  }
   const fallbackOvr = comp === 'rpl' ? 76.5 : 70.5;
-  const ovr = ovrs.length ? ovrs.reduce((s: number, x: number) => s + x, 0) / ovrs.length : fallbackOvr;
+  const ovr = xiRatings.length ? xiRatings.reduce((s, x) => s + x, 0) / xiRatings.length : fallbackOvr;
 
   const attPositions = new Set(['ЦФ', 'ЛВ', 'ПВ', 'АП', 'ST', 'CF', 'LW', 'RW', 'CAM']);
   const defPositions = new Set(['ВР', 'ЦЗ', 'ЛЗ', 'ПЗ', 'ОП', 'GK', 'CB', 'LB', 'RB', 'CDM']);
@@ -444,16 +859,20 @@ function getTeamFormAndStrength(ctx: AdServerContext, teamId: string): { ovr: nu
     .filter((p: any) => attPositions.has(String(p.pos || '')))
     .map((p: any) => Number(p.ovr || p.rating || ovr))
     .sort((a: number, b: number) => b - a)
-    .slice(0, 5);
+    .slice(0, 4);
   const defList = players
     .filter((p: any) => defPositions.has(String(p.pos || '')))
     .map((p: any) => Number(p.ovr || p.rating || ovr))
     .sort((a: number, b: number) => b - a)
-    .slice(0, 6);
+    .slice(0, 5);
   const attOvr = attList.length ? attList.reduce((s: number, x: number) => s + x, 0) / attList.length : ovr;
   const defOvr = defList.length ? defList.reduce((s: number, x: number) => s + x, 0) / defList.length : ovr;
 
-  // Compute season form from completed fixtures
+  // Club financial/reputation edge so top-budget clubs properly price as favorites even when raw OVRs are tight
+  const rawBudget = Number(t?.budget || 6_000_000);
+  const budgetEdge = clampNum(Math.log10(Math.max(500_000, rawBudget) / 6_500_000) * 2.1, -1.7, 2.3);
+
+  // Season form from completed fixtures (exponential weight as season progresses)
   const season = ctx.S();
   const done = (Array.isArray(db.fixtures) ? db.fixtures : []).filter(
     (fx: any) => (fx.season || season) === season && fx.status === 'done' && (fx.home === teamId || fx.away === teamId)
@@ -472,130 +891,286 @@ function getTeamFormAndStrength(ctx: AdServerContext, teamId: string): { ovr: nu
   const ppg = n > 0 ? pts / n : 1.35;
   const gdpm = n > 0 ? gd / n : 0;
   const weight = Math.min(1, n / 6);
-  const formDelta = weight * ((ppg - 1.35) * 2.0 + gdpm * 1.0);
+  const formDelta = weight * ((ppg - 1.35) * 2.2 + gdpm * 1.15);
 
   const style = String(db.tactics?.[teamId]?.style || 'balanced');
-  return { ovr, attOvr, defOvr, formDelta, style, compTier };
+  return { ovr, attOvr, defOvr, formDelta, budgetEdge, style, compTier };
 }
 
 export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
   markets: PredictionMarketDef[];
   quickScores: Array<{ h: number; a: number; score: string; odd: number }>;
+  exactMatrix: number[][];
   calcExactOdd: (eh: number, ea: number) => number;
   expectedGoals: { home: number; away: number };
+  probs: { p1: number; pX: number; p2: number };
+  refereeName: string | null;
 } {
   const db = ctx.getDb();
-  const home = getTeamFormAndStrength(ctx, f.home);
-  const away = getTeamFormAndStrength(ctx, f.away);
+  const home = getTeamFormAndStrength(ctx, f.home, f);
+  const away = getTeamFormAndStrength(ctx, f.away, f);
   const isDerby = !!(Array.isArray(db.derbies) && db.derbies.some((d: any) => (d.a === f.home && d.b === f.away) || (d.a === f.away && d.b === f.home)));
   const isNeutral = !!f.neutralField || f.comp === 'supercup';
 
-  const homeAdv = isNeutral ? 0 : 1.05;
-  const rawDiff = (home.ovr + home.formDelta + home.compTier + homeAdv) - (away.ovr + away.formDelta + away.compTier);
-  const diff = clampNum(rawDiff, -12, 12);
+  const homePower = home.ovr + home.budgetEdge + home.formDelta + home.compTier;
+  const awayPower = away.ovr + away.budgetEdge + away.formDelta + away.compTier;
+  const homeAdv = isNeutral ? 0 : 1.35;
+  const diff = clampNum((homePower + homeAdv) - awayPower, -14, 14);
 
-  // Attacking vs opposing defensive edge influences total goal tempo cleanly per pairing
-  const tempoShiftH = clampNum((home.attOvr - away.defOvr) * 0.025, -0.14, 0.14);
-  const tempoShiftA = clampNum((away.attOvr - home.defOvr) * 0.025, -0.14, 0.14);
+  const tempoShiftH = clampNum((home.attOvr - away.defOvr) * 0.028, -0.15, 0.15);
+  const tempoShiftA = clampNum((away.attOvr - home.defOvr) * 0.028, -0.15, 0.15);
 
   const styleTempo = (s: string, opp: string) => {
     let m = 1.0;
     if (s === 'attack') m *= 1.13;
     else if (s === 'press') m *= 1.07;
     else if (s === 'bus') m *= 0.85;
-    if (opp === 'attack') m *= 1.1;
+    if (opp === 'attack') m *= 1.09;
     else if (opp === 'bus') m *= 0.87;
-    if (isDerby) m *= 0.95;
+    if (isDerby) m *= 0.96;
     return m;
   };
 
-  const baseGoal = isNeutral ? 1.24 : 1.29;
-  const lambdaH = clampNum(baseGoal * Math.exp(0.075 * diff) * (1 + tempoShiftH) * styleTempo(home.style, away.style), 0.55, 2.75);
-  const lambdaA = clampNum(baseGoal * Math.exp(-0.075 * diff) * (1 + tempoShiftA) * styleTempo(away.style, home.style), 0.48, 2.55);
+  // Weather impact
+  const wTxt = String(f.weather || '').toLowerCase();
+  const badPitch = /(дожд|снег|ливн|тяжёл|тяжел|гряз)/.test(wTxt);
+  const weatherTempo = badPitch ? 0.94 : 1.0;
+
+  const baseGoal = isNeutral ? 1.24 : 1.27;
+  const lambdaH = clampNum(baseGoal * Math.exp(0.088 * diff) * (1 + tempoShiftH) * styleTempo(home.style, away.style) * weatherTempo, 0.45, 2.95);
+  const lambdaA = clampNum(baseGoal * Math.exp(-0.088 * diff) * (1 + tempoShiftA) * styleTempo(away.style, home.style) * weatherTempo, 0.40, 2.75);
   const totalLambda = lambdaH + lambdaA;
 
-  // Build normalized 7x7 Poisson score matrix with mild Dixon-Coles low-score draw adjustment
-  const grid: number[][] = [];
-  let sumGrid = 0;
-  for (let h = 0; h <= 6; h++) {
-    grid[h] = [];
-    for (let a = 0; a <= 6; a++) {
-      let p = poissonP(h, lambdaH) * poissonP(a, lambdaA);
-      if (h === 0 && a === 0) p *= 1.10;
-      else if (h === 1 && a === 1) p *= 1.08;
-      else if ((h === 1 && a === 0) || (h === 0 && a === 1)) p *= 0.97;
-      grid[h][a] = p;
-      sumGrid += p;
-    }
-  }
-  for (let h = 0; h <= 6; h++) {
-    for (let a = 0; a <= 6; a++) grid[h][a] /= sumGrid;
-  }
+  // Referee style
+  const refObj = Array.isArray(db.referees)
+    ? db.referees.find((r: any) => r.id === f.refId || r.name === f.referee)
+    : null;
+  const refStyle = String(refObj?.style || 'balanced');
+  const refName = refObj?.name || (typeof f.referee === 'string' && f.referee) || null;
 
-  let p1 = 0, pX = 0, p2 = 0, pOver25 = 0, pBtts = 0;
-  for (let h = 0; h <= 6; h++) {
-    for (let a = 0; a <= 6; a++) {
-      const p = grid[h][a];
+  // Full-time, 1st-half, and 2nd-half Poisson grids
+  const gridFT = buildPoissonGrid(lambdaH, lambdaA, 7);
+  const gridHT = buildPoissonGrid(lambdaH * 0.44, lambdaA * 0.44, 4);
+  const grid2T = buildPoissonGrid(lambdaH * 0.56, lambdaA * 0.56, 4);
+
+  // Aggregate FT probabilities
+  let p1 = 0, pX = 0, p2 = 0;
+  let pOver15 = 0, pOver25 = 0, pOver35 = 0;
+  let pTot2Win = 0, pTot2Loss = 0;
+  let pTot3Win = 0, pTot3Loss = 0;
+  let pBtts = 0;
+  let pF1m15 = 0, pF2m15 = 0;
+  let pF1m10Win = 0, pF1m10Loss = 0;
+  let pF2m10Win = 0, pF2m10Loss = 0;
+  let pIt1_05 = 0, pIt1_15 = 0, pIt2_05 = 0, pIt2_15 = 0;
+  let p1_o15 = 0, p1_o25 = 0, p1_u25 = 0;
+  let p2_o15 = 0, p2_o25 = 0, p2_u25 = 0;
+  let p1x_o15 = 0, px2_o15 = 0, px_u25 = 0;
+  let p1_by = 0, p1_bn = 0, p2_by = 0, p2_bn = 0, p1x_by = 0, px2_by = 0;
+
+  for (let h = 0; h <= 7; h++) {
+    for (let a = 0; a <= 7; a++) {
+      const p = gridFT[h][a];
+      const tot = h + a;
+      const diffG = h - a;
+      const btts = h > 0 && a > 0;
+
       if (h > a) p1 += p;
       else if (h === a) pX += p;
       else p2 += p;
-      if (h + a >= 3) pOver25 += p;
-      if (h >= 1 && a >= 1) pBtts += p;
+
+      if (tot >= 2) pOver15 += p;
+      if (tot >= 3) pOver25 += p;
+      if (tot >= 4) pOver35 += p;
+
+      if (tot >= 3) pTot2Win += p;
+      else if (tot <= 1) pTot2Loss += p;
+
+      if (tot >= 4) pTot3Win += p;
+      else if (tot <= 2) pTot3Loss += p;
+
+      if (btts) pBtts += p;
+      if (diffG >= 2) pF1m15 += p;
+      if (diffG <= -2) pF2m15 += p;
+      if (diffG >= 2) pF1m10Win += p;
+      else if (diffG <= 0) pF1m10Loss += p;
+      if (diffG <= -2) pF2m10Win += p;
+      else if (diffG >= 0) pF2m10Loss += p;
+
+      if (h >= 1) pIt1_05 += p;
+      if (h >= 2) pIt1_15 += p;
+      if (a >= 1) pIt2_05 += p;
+      if (a >= 2) pIt2_15 += p;
+
+      if (h > a && tot >= 2) p1_o15 += p;
+      if (h > a && tot >= 3) p1_o25 += p;
+      if (h > a && tot <= 2) p1_u25 += p;
+      if (a > h && tot >= 2) p2_o15 += p;
+      if (a > h && tot >= 3) p2_o25 += p;
+      if (a > h && tot <= 2) p2_u25 += p;
+      if (h >= a && tot >= 2) p1x_o15 += p;
+      if (a >= h && tot >= 2) px2_o15 += p;
+      if (h === a && tot <= 2) px_u25 += p;
+
+      if (h > a && btts) p1_by += p;
+      if (h > a && !btts) p1_bn += p;
+      if (a > h && btts) p2_by += p;
+      if (a > h && !btts) p2_bn += p;
+      if (h >= a && btts) p1x_by += p;
+      if (a >= h && btts) px2_by += p;
     }
   }
 
-  const odd1 = oddFromProb(p1);
-  const oddX = oddFromProb(pX);
-  const odd2 = oddFromProb(p2);
+  // 1st Half probabilities & Both-halves / HT-FT convolution
+  let pHt1 = 0, pHtX = 0, pHt2 = 0, pHtOver05 = 0, pHtOver15 = 0;
+  let p2tOver05 = 0;
+  for (let h = 0; h <= 4; h++) {
+    for (let a = 0; a <= 4; a++) {
+      const p = gridHT[h][a];
+      if (h > a) pHt1 += p;
+      else if (h === a) pHtX += p;
+      else pHt2 += p;
+      if (h + a >= 1) pHtOver05 += p;
+      if (h + a >= 2) pHtOver15 += p;
 
-  const odd1X = oddFromProb(p1 + pX, 1.05, 1.12, 3.8);
-  const odd12 = oddFromProb(p1 + p2, 1.05, 1.12, 2.6);
-  const oddX2 = oddFromProb(pX + p2, 1.05, 1.12, 4.2);
+      const pSec = grid2T[h][a];
+      if (h + a >= 1) p2tOver05 += pSec;
+    }
+  }
+  const pBothHalvesGoal = clampNum(pHtOver05 * p2tOver05, 0.25, 0.78);
 
-  const oddOver25 = oddFromProb(pOver25, 1.05, 1.35, 3.4);
-  const oddUnder25 = oddFromProb(1 - pOver25, 1.05, 1.35, 3.4);
+  // HT/FT convolution
+  const htFtProbs: Record<string, number> = {
+    '1_1': 0, 'X_1': 0, '2_1': 0,
+    '1_X': 0, 'X_X': 0, '2_X': 0,
+    '1_2': 0, 'X_2': 0, '2_2': 0,
+  };
+  for (let hh = 0; hh <= 4; hh++) {
+    for (let ha = 0; ha <= 4; ha++) {
+      const ph = gridHT[hh][ha];
+      const htRes = hh > ha ? '1' : hh < ha ? '2' : 'X';
+      for (let sh = 0; sh <= 4; sh++) {
+        for (let sa = 0; sa <= 4; sa++) {
+          const ps = grid2T[sh][sa];
+          const fh = hh + sh;
+          const fa = ha + sa;
+          const ftRes = fh > fa ? '1' : fh < fa ? '2' : 'X';
+          htFtProbs[`${htRes}_${ftRes}`] += ph * ps;
+        }
+      }
+    }
+  }
 
-  const oddBttsYes = oddFromProb(pBtts, 1.05, 1.40, 3.2);
-  const oddBttsNo = oddFromProb(1 - pBtts, 1.05, 1.40, 3.2);
+  // First goal probabilities
+  const pZeroZero = gridFT[0][0];
+  const pAnyGoal = Math.max(0.01, 1 - pZeroZero);
+  const pFirstHome = pAnyGoal * (lambdaH / Math.max(0.05, totalLambda));
+  const pFirstAway = pAnyGoal * (lambdaA / Math.max(0.05, totalLambda));
 
-  // Yellow cards > 3.5 probability
-  const pressBoost = (home.style === 'press' ? 0.06 : 0) + (away.style === 'press' ? 0.06 : 0);
-  const busBoost = (home.style === 'bus' ? 0.03 : 0) + (away.style === 'bus' ? 0.03 : 0);
-  const derbyCardBoost = isDerby ? 0.14 : 0;
-  const pYcOver = clampNum(0.46 + pressBoost + busBoost + derbyCardBoost, 0.34, 0.72);
-  const oddYcOver = oddFromProb(pYcOver, 1.06, 1.40, 2.8);
-  const oddYcUnder = oddFromProb(1 - pYcOver, 1.06, 1.40, 2.8);
+  // Coherent bookmaker odds
+  const [odd1, oddX, odd2] = tripleOddsFromProbs(p1, pX, p2, 1.06);
+  const odd1X = oddFromProb(p1 + pX, 1.055, 1.06, 4.5);
+  const odd12 = oddFromProb(p1 + p2, 1.055, 1.06, 2.8);
+  const oddX2 = oddFromProb(pX + p2, 1.055, 1.06, 5.2);
 
-  // Corners > 8.5 probability (driven by expected attack & style)
-  const attackBoost = (home.style === 'attack' || home.style === 'possession' ? 0.05 : 0) + (away.style === 'attack' || away.style === 'possession' ? 0.05 : 0);
-  const pCoOver = clampNum(0.44 + (totalLambda - 2.35) * 0.10 + attackBoost, 0.34, 0.70);
-  const oddCoOver = oddFromProb(pCoOver, 1.06, 1.42, 2.75);
-  const oddCoUnder = oddFromProb(1 - pCoOver, 1.06, 1.42, 2.75);
+  const [oddF1_0, oddF2_0] = pairOddsFromProbs(p1, p2, 1.055);
+  const [oddF1_m10, oddF2_p10] = pairOddsFromProbs(pF1m10Win, pF1m10Loss, 1.058);
+  const [oddF1_m15, oddF2_p15] = pairOddsFromProbs(pF1m15, 1 - pF1m15, 1.058);
+  const [oddF1_p10, oddF2_m10] = pairOddsFromProbs(pF2m10Loss, pF2m10Win, 1.058);
+  const [oddF1_p15, oddF2_m15] = pairOddsFromProbs(1 - pF2m15, pF2m15, 1.058);
 
-  // Specials
-  const pPen = clampNum(0.24 + (totalLambda - 2.35) * 0.04 + (isDerby ? 0.04 : 0), 0.18, 0.38);
-  const pRed = clampNum(0.14 + (isDerby ? 0.07 : 0) + pressBoost * 0.35, 0.11, 0.28);
-  const pLate75 = clampNum(1 - Math.exp(-0.23 * totalLambda), 0.34, 0.56);
-  const htLambdaH = lambdaH * 0.44;
-  const htLambdaA = lambdaA * 0.44;
-  let pHtDraw = 0;
-  for (let k = 0; k <= 4; k++) pHtDraw += poissonP(k, htLambdaH) * poissonP(k, htLambdaA);
-  pHtDraw = clampNum(pHtDraw, 0.32, 0.52);
+  const [oddO15, oddU15] = pairOddsFromProbs(pOver15, 1 - pOver15, 1.055);
+  const [oddO20, oddU20] = pairOddsFromProbs(pTot2Win, pTot2Loss, 1.055);
+  const [oddO25, oddU25] = pairOddsFromProbs(pOver25, 1 - pOver25, 1.055);
+  const [oddO30, oddU30] = pairOddsFromProbs(pTot3Win, pTot3Loss, 1.055);
+  const [oddO35, oddU35] = pairOddsFromProbs(pOver35, 1 - pOver35, 1.055);
+  const [oddBttsY, oddBttsN] = pairOddsFromProbs(pBtts, 1 - pBtts, 1.055);
+
+  const [oddIt1_05o, oddIt1_05u] = pairOddsFromProbs(pIt1_05, 1 - pIt1_05, 1.06);
+  const [oddIt1_15o, oddIt1_15u] = pairOddsFromProbs(pIt1_15, 1 - pIt1_15, 1.06);
+  const [oddIt2_05o, oddIt2_05u] = pairOddsFromProbs(pIt2_05, 1 - pIt2_05, 1.06);
+  const [oddIt2_15o, oddIt2_15u] = pairOddsFromProbs(pIt2_15, 1 - pIt2_15, 1.06);
+
+  const [oddHt1, oddHtX, oddHt2] = tripleOddsFromProbs(pHt1, pHtX, pHt2, 1.068);
+  const [oddHtO05, oddHtU05] = pairOddsFromProbs(pHtOver05, 1 - pHtOver05, 1.06);
+  const [oddHtO15, oddHtU15] = pairOddsFromProbs(pHtOver15, 1 - pHtOver15, 1.06);
+  const [oddBothHalvesY, oddBothHalvesN] = pairOddsFromProbs(pBothHalvesGoal, 1 - pBothHalvesGoal, 1.065);
+  const [oddFgH, oddFgNone, oddFgA] = tripleOddsFromProbs(pFirstHome, pZeroZero, pFirstAway, 1.068);
+
+  // Statistical lines (driven by team tactics, xG, derby, referee & weather)
+  const attackScore = (s: string) => (s === 'attack' ? 0.8 : s === 'possession' ? 0.6 : s === 'press' ? 0.3 : s === 'bus' ? -0.6 : 0);
+  const cornerExpH = clampNum(4.5 + (lambdaH - 1.2) * 1.15 + attackScore(home.style) + (badPitch ? 0.35 : 0), 2.8, 7.2);
+  const cornerExpA = clampNum(3.9 + (lambdaA - 1.1) * 1.15 + attackScore(away.style) + (badPitch ? 0.35 : 0), 2.4, 6.8);
+  const cornerExpTotal = cornerExpH + cornerExpA;
+  const pCoOver85 = 1 - poissonCDF(8, cornerExpTotal);
+  const pCoOver95 = 1 - poissonCDF(9, cornerExpTotal);
+  const [oddCoO85, oddCoU85] = pairOddsFromProbs(pCoOver85, 1 - pCoOver85, 1.065);
+  const [oddCoO95, oddCoU95] = pairOddsFromProbs(pCoOver95, 1 - pCoOver95, 1.065);
+
+  // Corner 1X2
+  let pCo1 = 0, pCoX = 0, pCo2 = 0;
+  for (let ch = 0; ch <= 12; ch++) {
+    const ph = poissonP(ch, cornerExpH);
+    for (let ca = 0; ca <= 12; ca++) {
+      const p = ph * poissonP(ca, cornerExpA);
+      if (ch > ca) pCo1 += p;
+      else if (ch === ca) pCoX += p;
+      else pCo2 += p;
+    }
+  }
+  const [oddCo1, oddCoX, oddCo2] = tripleOddsFromProbs(pCo1, pCoX, pCo2, 1.07);
+
+  // Yellow cards
+  const pressCards = (home.style === 'press' ? 0.55 : home.style === 'bus' ? 0.30 : 0) + (away.style === 'press' ? 0.55 : away.style === 'bus' ? 0.30 : 0);
+  const refCardDelta = refStyle === 'strict' ? 0.75 : refStyle === 'lenient' ? -0.55 : 0;
+  const ycExp = clampNum(3.45 + pressCards + (isDerby ? 0.95 : 0) + refCardDelta + (badPitch ? 0.25 : 0), 2.2, 6.2);
+  const pYcOver35 = 1 - poissonCDF(3, ycExp);
+  const pYcOver45 = 1 - poissonCDF(4, ycExp);
+  const [oddYcO35, oddYcU35] = pairOddsFromProbs(pYcOver35, 1 - pYcOver35, 1.065);
+  const [oddYcO45, oddYcU45] = pairOddsFromProbs(pYcOver45, 1 - pYcOver45, 1.065);
+
+  // Shots on target (SOT)
+  const sotExp = clampNum(5.0 + totalLambda * 1.45 + (home.style === 'attack' ? 0.5 : 0) + (away.style === 'attack' ? 0.5 : 0), 5.5, 12.5);
+  const pSot75 = 1 - poissonCDF(7, sotExp);
+  const pSot95 = 1 - poissonCDF(9, sotExp);
+  const [oddSotO75, oddSotU75] = pairOddsFromProbs(pSot75, 1 - pSot75, 1.065);
+  const [oddSotO95, oddSotU95] = pairOddsFromProbs(pSot95, 1 - pSot95, 1.065);
+
+  // Fouls
+  const foulExp = clampNum(20.5 + pressCards * 2.2 + (isDerby ? 3.2 : 0) + (refStyle === 'strict' ? 1.5 : -0.5) + (badPitch ? 1.2 : 0), 15.0, 29.0);
+  const pFouls215 = 1 - poissonCDF(21, foulExp);
+  const [oddFoO215, oddFoU215] = pairOddsFromProbs(pFouls215, 1 - pFouls215, 1.065);
+
+  // Events (Penalty, Red Card, Goal 75+)
+  const pPen = clampNum(0.22 + (totalLambda - 2.35) * 0.04 + (isDerby ? 0.04 : 0) + (refStyle === 'strict' ? 0.04 : 0), 0.16, 0.36);
+  const pRed = clampNum(0.13 + (isDerby ? 0.06 : 0) + (refStyle === 'strict' ? 0.04 : 0) + pressCards * 0.03, 0.10, 0.28);
+  const pLate75 = clampNum(1 - Math.exp(-0.23 * totalLambda), 0.32, 0.56);
+  const [oddPenY, oddPenN] = pairOddsFromProbs(pPen, 1 - pPen, 1.07);
+  const [oddRedY, oddRedN] = pairOddsFromProbs(pRed, 1 - pRed, 1.075);
+  const [oddLateY, oddLateN] = pairOddsFromProbs(pLate75, 1 - pLate75, 1.065);
 
   const calcExactOdd = (eh: number, ea: number) => {
     const h = clampNum(Math.round(eh), 0, 15);
     const a = clampNum(Math.round(ea), 0, 15);
-    let p: number;
-    if (h <= 6 && a <= 6) {
-      p = grid[h][a];
-    } else {
-      p = Math.max(0.004, poissonP(Math.min(h, 8), lambdaH) * poissonP(Math.min(a, 8), lambdaA));
-    }
-    return roundBookieOdd(clampNum(1 / (p * 1.10), 4.5, 35.0));
+    const p = h <= 7 && a <= 7
+      ? gridFT[h][a]
+      : Math.max(0.002, poissonP(Math.min(h, 9), lambdaH) * poissonP(Math.min(a, 9), lambdaA));
+    return roundBookieOdd(clampNum(1 / (p * 1.11), 4.2, 50.0));
   };
 
+  // 6x6 exact score coefficient matrix for instant accurate custom scores in UI
+  const exactMatrix: number[][] = [];
+  for (let h = 0; h <= 5; h++) {
+    exactMatrix[h] = [];
+    for (let a = 0; a <= 5; a++) {
+      exactMatrix[h][a] = calcExactOdd(h, a);
+    }
+  }
+
   const quickCandidates: Array<[number, number]> = [
-    [1, 0], [2, 0], [2, 1], [1, 1], [0, 0], [0, 1], [1, 2], [2, 2],
+    [1, 0], [2, 0], [2, 1], [3, 0], [3, 1],
+    [0, 0], [1, 1], [2, 2],
+    [0, 1], [0, 2], [1, 2], [1, 3],
   ];
   const quickScores = quickCandidates.map(([h, a]) => ({
     h,
@@ -604,59 +1179,218 @@ export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
     odd: calcExactOdd(h, a),
   }));
 
-  const mk = (id: string, title: string, subtitle: string, opts: Array<{ pick: string; label: string; shortLabel: string; odd: number }>): PredictionMarketDef => ({
+  const mk = (
+    id: string,
+    group: PredictionMarketGroup,
+    title: string,
+    subtitle: string,
+    opts: Array<{ pick: string; label: string; shortLabel: string; odd: number }>
+  ): PredictionMarketDef => ({
     id,
+    group,
     title,
     subtitle,
-    options: opts.map((o) => ({ ...o, basePts: Math.max(2, Math.round(o.odd * 1.5)) })),
+    options: opts.map((o) => ({ ...o, basePts: Math.max(1, Math.round(o.odd * 1.5)) })),
   });
 
+  const homeNm = ctx.tn(f.home);
+  const awayNm = ctx.tn(f.away);
+
   const markets: PredictionMarketDef[] = [
-    mk('outcome', 'Исход матча', 'Основное время (П1 / Х / П2)', [
-      { pick: '1', label: `П1 (${ctx.tn(f.home)})`, shortLabel: 'П1', odd: odd1 },
+    mk('outcome', 'main', 'Исход матча', 'Основное время (П1 / Х / П2)', [
+      { pick: '1', label: `П1 (${homeNm})`, shortLabel: 'П1', odd: odd1 },
       { pick: 'X', label: 'Ничья (Х)', shortLabel: 'Х', odd: oddX },
-      { pick: '2', label: `П2 (${ctx.tn(f.away)})`, shortLabel: 'П2', odd: odd2 },
+      { pick: '2', label: `П2 (${awayNm})`, shortLabel: 'П2', odd: odd2 },
     ]),
-    mk('double_chance', 'Двойной шанс', 'Перестраховка исхода', [
-      { pick: '1X', label: '1Х (Хозяева не проиграют)', shortLabel: '1Х', odd: odd1X },
+    mk('double_chance', 'main', 'Двойной шанс', 'Перестраховка исхода', [
+      { pick: '1X', label: `1Х (${homeNm} не проиграет)`, shortLabel: '1Х', odd: odd1X },
       { pick: '12', label: '12 (Без ничьей)', shortLabel: '12', odd: odd12 },
-      { pick: 'X2', label: 'Х2 (Гости не проиграют)', shortLabel: 'Х2', odd: oddX2 },
+      { pick: 'X2', label: `Х2 (${awayNm} не проиграет)`, shortLabel: 'Х2', odd: oddX2 },
     ]),
-    mk('total_goals', 'Тотал голов 2.5', 'Суммарно забито в матче', [
-      { pick: 'over_2_5', label: 'Тотал больше 2.5', shortLabel: 'ТБ 2.5', odd: oddOver25 },
-      { pick: 'under_2_5', label: 'Тотал меньше 2.5', shortLabel: 'ТМ 2.5', odd: oddUnder25 },
+    mk('hcp_0', 'main', 'Фора (0)', 'Возврат ставки при ничьей', [
+      { pick: 'f1_0', label: `Ф1 (0) · ${homeNm}`, shortLabel: 'Ф1 (0)', odd: oddF1_0 },
+      { pick: 'f2_0', label: `Ф2 (0) · ${awayNm}`, shortLabel: 'Ф2 (0)', odd: oddF2_0 },
     ]),
-    mk('btts', 'Обе забьют', 'Голы обеих команд', [
-      { pick: 'yes', label: 'Обе забьют: Да', shortLabel: 'ОЗ Да', odd: oddBttsYes },
-      { pick: 'no', label: 'Обе забьют: Нет', shortLabel: 'ОЗ Нет', odd: oddBttsNo },
+    mk('hcp_m10', 'main', 'Фора (-1.0 / +1.0)', 'Возврат при разнице ровно 1 мяч', [
+      { pick: 'f1_m10', label: 'Фора 1 (-1.0)', shortLabel: 'Ф1 (-1.0)', odd: oddF1_m10 },
+      { pick: 'f2_p10', label: 'Фора 2 (+1.0)', shortLabel: 'Ф2 (+1.0)', odd: oddF2_p10 },
     ]),
-    mk('yellow_cards', 'Жёлтые карточки 3.5', 'Всего предупреждений', [
-      { pick: 'over_3_5', label: 'ЖК больше 3.5', shortLabel: 'ЖК Б 3.5', odd: oddYcOver },
-      { pick: 'under_3_5', label: 'ЖК меньше 3.5', shortLabel: 'ЖК М 3.5', odd: oddYcUnder },
+    mk('hcp_m15', 'main', 'Фора (-1.5 / +1.5)', 'Победа в 2+ мяча или удержание', [
+      { pick: 'f1_m15', label: 'Фора 1 (-1.5)', shortLabel: 'Ф1 (-1.5)', odd: oddF1_m15 },
+      { pick: 'f2_p15', label: 'Фора 2 (+1.5)', shortLabel: 'Ф2 (+1.5)', odd: oddF2_p15 },
     ]),
-    mk('corners', 'Угловые 8.5', 'Подачи с угла поля', [
-      { pick: 'over_8_5', label: 'Угловых больше 8.5', shortLabel: 'Угл Б 8.5', odd: oddCoOver },
-      { pick: 'under_8_5', label: 'Угловых меньше 8.5', shortLabel: 'Угл М 8.5', odd: oddCoUnder },
+    mk('hcp_p10', 'main', 'Фора (+1.0 / -1.0)', 'Возврат при победе гостей в 1 мяч', [
+      { pick: 'f1_p10', label: 'Фора 1 (+1.0)', shortLabel: 'Ф1 (+1.0)', odd: oddF1_p10 },
+      { pick: 'f2_m10', label: 'Фора 2 (-1.0)', shortLabel: 'Ф2 (-1.0)', odd: oddF2_m10 },
     ]),
-    mk('specials', 'События матча', 'Игровые ситуации', [
-      { pick: 'penalty_yes', label: 'Будет пенальти', shortLabel: 'Пенальти', odd: oddFromProb(pPen, 1.07, 2.2, 5.5) },
-      { pick: 'red_yes', label: 'Будет удаление (КК)', shortLabel: 'Удаление', odd: oddFromProb(pRed, 1.08, 2.8, 8.5) },
-      { pick: 'goal_75_plus', label: 'Гол на 75+ мин', shortLabel: 'Гол 75+', odd: oddFromProb(pLate75, 1.06, 1.65, 2.8) },
-      { pick: 'ht_draw', label: 'Ничья в 1-м тайме', shortLabel: 'Ничья 1Т', odd: oddFromProb(pHtDraw, 1.06, 1.80, 2.75) },
+    mk('hcp_p15', 'main', 'Фора (+1.5 / -1.5)', 'Удержание хозяев или победа гостей в 2+', [
+      { pick: 'f1_p15', label: 'Фора 1 (+1.5)', shortLabel: 'Ф1 (+1.5)', odd: oddF1_p15 },
+      { pick: 'f2_m15', label: 'Фора 2 (-1.5)', shortLabel: 'Ф2 (-1.5)', odd: oddF2_m15 },
+    ]),
+    mk('total_1_5', 'main', 'Тотал 1.5', 'Суммарно голов в матче', [
+      { pick: 'over_1_5', label: 'Тотал больше 1.5', shortLabel: 'ТБ 1.5', odd: oddO15 },
+      { pick: 'under_1_5', label: 'Тотал меньше 1.5', shortLabel: 'ТМ 1.5', odd: oddU15 },
+    ]),
+    mk('total_2_0', 'main', 'Тотал 2.0', 'Возврат при ровно 2 голах', [
+      { pick: 'over_2_0', label: 'Тотал больше 2.0', shortLabel: 'ТБ 2.0', odd: oddO20 },
+      { pick: 'under_2_0', label: 'Тотал меньше 2.0', shortLabel: 'ТМ 2.0', odd: oddU20 },
+    ]),
+    mk('total_goals', 'main', 'Тотал 2.5', 'Основной тотал матча', [
+      { pick: 'over_2_5', label: 'Тотал больше 2.5', shortLabel: 'ТБ 2.5', odd: oddO25 },
+      { pick: 'under_2_5', label: 'Тотал меньше 2.5', shortLabel: 'ТМ 2.5', odd: oddU25 },
+    ]),
+    mk('total_3_0', 'main', 'Тотал 3.0', 'Возврат при ровно 3 голах', [
+      { pick: 'over_3_0', label: 'Тотал больше 3.0', shortLabel: 'ТБ 3.0', odd: oddO30 },
+      { pick: 'under_3_0', label: 'Тотал меньше 3.0', shortLabel: 'ТМ 3.0', odd: oddU30 },
+    ]),
+    mk('total_3_5', 'main', 'Тотал 3.5', 'Верховой / низовой матч', [
+      { pick: 'over_3_5', label: 'Тотал больше 3.5', shortLabel: 'ТБ 3.5', odd: oddO35 },
+      { pick: 'under_3_5', label: 'Тотал меньше 3.5', shortLabel: 'ТМ 3.5', odd: oddU35 },
+    ]),
+    mk('btts', 'main', 'Обе забьют', 'Голы обеих команд', [
+      { pick: 'yes', label: 'Обе забьют: Да', shortLabel: 'ОЗ Да', odd: oddBttsY },
+      { pick: 'no', label: 'Обе забьют: Нет', shortLabel: 'ОЗ Нет', odd: oddBttsN },
+    ]),
+
+    // Goals & Combos
+    mk('it1_0_5', 'goals', `ИТ ${homeNm} 0.5`, 'Индивидуальный тотал хозяев', [
+      { pick: 'over_0_5', label: `ИТ1 Б 0.5 (${homeNm})`, shortLabel: 'ИТ1 Б 0.5', odd: oddIt1_05o },
+      { pick: 'under_0_5', label: `ИТ1 М 0.5 (${homeNm})`, shortLabel: 'ИТ1 М 0.5', odd: oddIt1_05u },
+    ]),
+    mk('it1_1_5', 'goals', `ИТ ${homeNm} 1.5`, '2+ гола хозяев', [
+      { pick: 'over_1_5', label: `ИТ1 Б 1.5 (${homeNm})`, shortLabel: 'ИТ1 Б 1.5', odd: oddIt1_15o },
+      { pick: 'under_1_5', label: `ИТ1 М 1.5 (${homeNm})`, shortLabel: 'ИТ1 М 1.5', odd: oddIt1_15u },
+    ]),
+    mk('it2_0_5', 'goals', `ИТ ${awayNm} 0.5`, 'Индивидуальный тотал гостей', [
+      { pick: 'over_0_5', label: `ИТ2 Б 0.5 (${awayNm})`, shortLabel: 'ИТ2 Б 0.5', odd: oddIt2_05o },
+      { pick: 'under_0_5', label: `ИТ2 М 0.5 (${awayNm})`, shortLabel: 'ИТ2 М 0.5', odd: oddIt2_05u },
+    ]),
+    mk('it2_1_5', 'goals', `ИТ ${awayNm} 1.5`, '2+ гола гостей', [
+      { pick: 'over_1_5', label: `ИТ2 Б 1.5 (${awayNm})`, shortLabel: 'ИТ2 Б 1.5', odd: oddIt2_15o },
+      { pick: 'under_1_5', label: `ИТ2 М 1.5 (${awayNm})`, shortLabel: 'ИТ2 М 1.5', odd: oddIt2_15u },
+    ]),
+    mk('first_goal', 'goals', 'Первый гол в матче', 'Кто откроет счёт', [
+      { pick: 'home', label: `Первый гол: ${homeNm}`, shortLabel: '1-й К1', odd: oddFgH },
+      { pick: 'none', label: 'Голов не будет (0:0)', shortLabel: 'Без голов', odd: oddFgNone },
+      { pick: 'away', label: `Первый гол: ${awayNm}`, shortLabel: '1-й К2', odd: oddFgA },
+    ]),
+    mk('both_halves_goal', 'goals', 'Голы в обоих таймах', 'Хотя бы по 1 голу в каждом тайме', [
+      { pick: 'yes', label: 'Голы в обоих таймах: Да', shortLabel: 'Оба 1Т/2Т Да', odd: oddBothHalvesY },
+      { pick: 'no', label: 'Голы в обоих таймах: Нет', shortLabel: 'Оба 1Т/2Т Нет', odd: oddBothHalvesN },
+    ]),
+    mk('combo_w_total', 'goals', 'Исход + Тотал', 'Комбинированные ставки', [
+      { pick: '1_over15', label: 'П1 и ТБ 1.5', shortLabel: 'П1 и ТБ 1.5', odd: oddFromProb(p1_o15, 1.075, 1.25, 22) },
+      { pick: '1_over25', label: 'П1 и ТБ 2.5', shortLabel: 'П1 и ТБ 2.5', odd: oddFromProb(p1_o25, 1.075, 1.55, 28) },
+      { pick: '1_under25', label: 'П1 и ТМ 2.5', shortLabel: 'П1 и ТМ 2.5', odd: oddFromProb(p1_u25, 1.075, 2.20, 28) },
+      { pick: '2_over15', label: 'П2 и ТБ 1.5', shortLabel: 'П2 и ТБ 1.5', odd: oddFromProb(p2_o15, 1.075, 1.35, 25) },
+      { pick: '2_over25', label: 'П2 и ТБ 2.5', shortLabel: 'П2 и ТБ 2.5', odd: oddFromProb(p2_o25, 1.075, 1.75, 32) },
+      { pick: '2_under25', label: 'П2 и ТМ 2.5', shortLabel: 'П2 и ТМ 2.5', odd: oddFromProb(p2_u25, 1.075, 2.50, 32) },
+      { pick: '1x_over15', label: '1Х и ТБ 1.5', shortLabel: '1Х и ТБ 1.5', odd: oddFromProb(p1x_o15, 1.07, 1.28, 12) },
+      { pick: 'x2_over15', label: 'Х2 и ТБ 1.5', shortLabel: 'Х2 и ТБ 1.5', odd: oddFromProb(px2_o15, 1.07, 1.40, 15) },
+      { pick: 'x_under25', label: 'Ничья и ТМ 2.5', shortLabel: 'Х и ТМ 2.5', odd: oddFromProb(px_u25, 1.075, 2.80, 14) },
+    ]),
+    mk('combo_w_btts', 'goals', 'Исход + Обе забьют', 'Победа/ничья и голы команд', [
+      { pick: '1_btts_y', label: 'П1 и ОЗ — Да', shortLabel: 'П1 и ОЗ Да', odd: oddFromProb(p1_by, 1.075, 2.10, 28) },
+      { pick: '1_btts_n', label: 'П1 и ОЗ — Нет', shortLabel: 'П1 и ОЗ Нет', odd: oddFromProb(p1_bn, 1.075, 1.85, 22) },
+      { pick: '2_btts_y', label: 'П2 и ОЗ — Да', shortLabel: 'П2 и ОЗ Да', odd: oddFromProb(p2_by, 1.075, 2.40, 34) },
+      { pick: '2_btts_n', label: 'П2 и ОЗ — Нет', shortLabel: 'П2 и ОЗ Нет', odd: oddFromProb(p2_bn, 1.075, 2.20, 30) },
+      { pick: '1x_btts_y', label: '1Х и ОЗ — Да', shortLabel: '1Х и ОЗ Да', odd: oddFromProb(p1x_by, 1.07, 1.65, 12) },
+      { pick: 'x2_btts_y', label: 'Х2 и ОЗ — Да', shortLabel: 'Х2 и ОЗ Да', odd: oddFromProb(px2_by, 1.07, 1.90, 14) },
+    ]),
+
+    // Halves
+    mk('ht_outcome', 'halves', '1-й тайм: Исход', 'Счёт к перерыву', [
+      { pick: '1', label: '1-й тайм: П1', shortLabel: '1Т П1', odd: oddHt1 },
+      { pick: 'X', label: '1-й тайм: Ничья', shortLabel: '1Т Х', odd: oddHtX },
+      { pick: '2', label: '1-й тайм: П2', shortLabel: '1Т П2', odd: oddHt2 },
+    ]),
+    mk('ht_total_0_5', 'halves', '1-й тайм: Тотал 0.5', 'Забитые мячи в 1-м тайме', [
+      { pick: 'over_0_5', label: '1Т Тотал больше 0.5', shortLabel: '1Т ТБ 0.5', odd: oddHtO05 },
+      { pick: 'under_0_5', label: '1Т Тотал меньше 0.5', shortLabel: '1Т ТМ 0.5', odd: oddHtU05 },
+    ]),
+    mk('ht_total_1_5', 'halves', '1-й тайм: Тотал 1.5', 'Результативность 1-го тайма', [
+      { pick: 'over_1_5', label: '1Т Тотал больше 1.5', shortLabel: '1Т ТБ 1.5', odd: oddHtO15 },
+      { pick: 'under_1_5', label: '1Т Тотал меньше 1.5', shortLabel: '1Т ТМ 1.5', odd: oddHtU15 },
+    ]),
+    mk('ht_ft', 'halves', 'Тайм / Матч', 'Итог 1-го тайма и итоговый результат', [
+      { pick: '1_1', label: 'Тайм/Матч: П1 / П1', shortLabel: 'П1/П1', odd: oddFromProb(htFtProbs['1_1'], 1.10, 1.60, 45) },
+      { pick: 'X_1', label: 'Тайм/Матч: Х / П1', shortLabel: 'Х/П1', odd: oddFromProb(htFtProbs['X_1'], 1.10, 2.80, 35) },
+      { pick: '2_1', label: 'Тайм/Матч: П2 / П1', shortLabel: 'П2/П1', odd: oddFromProb(htFtProbs['2_1'], 1.12, 9.0, 50) },
+      { pick: '1_X', label: 'Тайм/Матч: П1 / Х', shortLabel: 'П1/Х', odd: oddFromProb(htFtProbs['1_X'], 1.10, 8.0, 38) },
+      { pick: 'X_X', label: 'Тайм/Матч: Х / Х', shortLabel: 'Х/Х', odd: oddFromProb(htFtProbs['X_X'], 1.10, 3.20, 18) },
+      { pick: '2_X', label: 'Тайм/Матч: П2 / Х', shortLabel: 'П2/Х', odd: oddFromProb(htFtProbs['2_X'], 1.10, 8.0, 40) },
+      { pick: '1_2', label: 'Тайм/Матч: П1 / П2', shortLabel: 'П1/П2', odd: oddFromProb(htFtProbs['1_2'], 1.12, 10.0, 50) },
+      { pick: 'X_2', label: 'Тайм/Матч: Х / П2', shortLabel: 'Х/П2', odd: oddFromProb(htFtProbs['X_2'], 1.10, 3.20, 40) },
+      { pick: '2_2', label: 'Тайм/Матч: П2 / П2', shortLabel: 'П2/П2', odd: oddFromProb(htFtProbs['2_2'], 1.10, 1.80, 45) },
+    ]),
+
+    // Stats & Events
+    mk('corners', 'stats', 'Угловые: Тотал 8.5', 'Подачи с угла поля', [
+      { pick: 'over_8_5', label: 'Угловых больше 8.5', shortLabel: 'Угл Б 8.5', odd: oddCoO85 },
+      { pick: 'under_8_5', label: 'Угловых меньше 8.5', shortLabel: 'Угл М 8.5', odd: oddCoU85 },
+    ]),
+    mk('corners_9_5', 'stats', 'Угловые: Тотал 9.5', 'Повышенный тотал угловых', [
+      { pick: 'over_9_5', label: 'Угловых больше 9.5', shortLabel: 'Угл Б 9.5', odd: oddCoO95 },
+      { pick: 'under_9_5', label: 'Угловых меньше 9.5', shortLabel: 'Угл М 9.5', odd: oddCoU95 },
+    ]),
+    mk('corners_outcome', 'stats', 'Угловые: Исход', 'Кто подаст больше угловых', [
+      { pick: '1', label: `Угловые: П1 (${homeNm})`, shortLabel: 'Угл П1', odd: oddCo1 },
+      { pick: 'X', label: 'Угловые: Ничья', shortLabel: 'Угл Х', odd: oddCoX },
+      { pick: '2', label: `Угловые: П2 (${awayNm})`, shortLabel: 'Угл П2', odd: oddCo2 },
+    ]),
+    mk('yellow_cards', 'stats', 'Жёлтые карточки: Тотал 3.5', 'Всего предупреждений', [
+      { pick: 'over_3_5', label: 'ЖК больше 3.5', shortLabel: 'ЖК Б 3.5', odd: oddYcO35 },
+      { pick: 'under_3_5', label: 'ЖК меньше 3.5', shortLabel: 'ЖК М 3.5', odd: oddYcU35 },
+    ]),
+    mk('yc_4_5', 'stats', 'Жёлтые карточки: Тотал 4.5', 'Жёсткость матча и судьи', [
+      { pick: 'over_4_5', label: 'ЖК больше 4.5', shortLabel: 'ЖК Б 4.5', odd: oddYcO45 },
+      { pick: 'under_4_5', label: 'ЖК меньше 4.5', shortLabel: 'ЖК М 4.5', odd: oddYcU45 },
+    ]),
+    mk('sot_7_5', 'stats', 'Удары в створ: Тотал 7.5', 'Удары в створ ворот', [
+      { pick: 'over_7_5', label: 'Удары в створ больше 7.5', shortLabel: 'Створ Б 7.5', odd: oddSotO75 },
+      { pick: 'under_7_5', label: 'Удары в створ меньше 7.5', shortLabel: 'Створ М 7.5', odd: oddSotU75 },
+    ]),
+    mk('sot_9_5', 'stats', 'Удары в створ: Тотал 9.5', 'Высокая острота у ворот', [
+      { pick: 'over_9_5', label: 'Удары в створ больше 9.5', shortLabel: 'Створ Б 9.5', odd: oddSotO95 },
+      { pick: 'under_9_5', label: 'Удары в створ меньше 9.5', shortLabel: 'Створ М 9.5', odd: oddSotU95 },
+    ]),
+    mk('fouls_21_5', 'stats', 'Фолы: Тотал 21.5', 'Суммарно нарушений правил', [
+      { pick: 'over_21_5', label: 'Фолов больше 21.5', shortLabel: 'Фолы Б 21.5', odd: oddFoO215 },
+      { pick: 'under_21_5', label: 'Фолов меньше 21.5', shortLabel: 'Фолы М 21.5', odd: oddFoU215 },
+    ]),
+    mk('penalty_yn', 'stats', 'Пенальти в матче', 'Назначение 11-метрового', [
+      { pick: 'yes', label: 'Пенальти: Да', shortLabel: 'Пенальти Да', odd: oddPenY },
+      { pick: 'no', label: 'Пенальти: Нет', shortLabel: 'Пенальти Нет', odd: oddPenN },
+    ]),
+    mk('red_yn', 'stats', 'Удаление (КК) в матче', 'Красная карточка любому игроку', [
+      { pick: 'yes', label: 'Удаление (КК): Да', shortLabel: 'КК Да', odd: oddRedY },
+      { pick: 'no', label: 'Удаление (КК): Нет', shortLabel: 'КК Нет', odd: oddRedN },
+    ]),
+    mk('goal_75_yn', 'stats', 'Гол на 75+ минуте', 'Забитый мяч в концовке', [
+      { pick: 'yes', label: 'Гол на 75+ мин: Да', shortLabel: 'Гол 75+ Да', odd: oddLateY },
+      { pick: 'no', label: 'Гол на 75+ мин: Нет', shortLabel: 'Гол 75+ Нет', odd: oddLateN },
     ]),
     {
       id: 'exact_score',
+      group: 'exact',
       title: 'Точный счёт',
       subtitle: 'Итоговый счёт матча',
-      options: [{ pick: 'exact', label: 'Точный счёт', shortLabel: 'Точн. счёт', odd: quickScores[0]?.odd || 7.0, basePts: 12 }],
+      options: [{ pick: 'exact', label: 'Точный счёт', shortLabel: 'Точн. счёт', odd: quickScores[0]?.odd || 6.80, basePts: 11 }],
     },
   ];
 
   return {
     markets,
     quickScores,
+    exactMatrix,
     calcExactOdd,
     expectedGoals: { home: Math.round(lambdaH * 100) / 100, away: Math.round(lambdaA * 100) / 100 },
+    probs: {
+      p1: Math.round(p1 * 1000) / 10,
+      pX: Math.round(pX * 1000) / 10,
+      p2: Math.round(p2 * 1000) / 10,
+    },
+    refereeName: refName,
   };
 }
 
@@ -1084,19 +1818,34 @@ function extractFixtureMatchSummary(ctx: AdServerContext, f: any) {
 
   let totalYc: number | null = null;
   let totalCorners: number | null = null;
+  let homeCorners: number | null = null;
+  let awayCorners: number | null = null;
+  let totalSot: number | null = null;
+  let totalFouls: number | null = null;
   let totalPenalties: number | null = null;
   let totalRed: number | null = null;
   let lateGoal75: boolean | null = null;
+  let htH: number | null = null;
+  let htA: number | null = null;
   let htDraw: boolean | null = null;
+  let firstGoalSide: 'home' | 'away' | 'none' | null = null;
 
   if (hasStats) {
     totalYc = Number(st.teams.home.yc || 0) + Number(st.teams.away.yc || 0);
-    totalCorners = Number(st.teams.home.co || 0) + Number(st.teams.away.co || 0);
+    homeCorners = Number(st.teams.home.co || 0);
+    awayCorners = Number(st.teams.away.co || 0);
+    totalCorners = homeCorners + awayCorners;
+    totalSot = Number(st.teams.home.sot || 0) + Number(st.teams.away.sot || 0);
+    totalFouls = Number(st.teams.home.fo || 0) + Number(st.teams.away.fo || 0);
     totalPenalties = Number(st.teams.home.penF || 0) + Number(st.teams.away.penF || 0);
     totalRed = Number(st.teams.home.rc || 0) + Number(st.teams.away.rc || 0);
   } else if (hasEvents) {
     totalYc = events.filter((e) => e.type === 'yellow').length;
-    totalCorners = events.filter((e) => e.type === 'corner').length;
+    homeCorners = events.filter((e) => e.type === 'corner' && e.team === 'home').length;
+    awayCorners = events.filter((e) => e.type === 'corner' && e.team === 'away').length;
+    totalCorners = homeCorners + awayCorners;
+    totalSot = events.filter((e) => e.type === 'goal' || e.type === 'save').length;
+    totalFouls = events.filter((e) => e.type === 'foul').length;
     totalPenalties = events.filter((e) => e.type === 'penalty').length;
     totalRed = events.filter((e) => e.type === 'red').length;
   }
@@ -1108,22 +1857,50 @@ function extractFixtureMatchSummary(ctx: AdServerContext, f: any) {
   }
 
   if (Array.isArray(f.ht) && f.ht.length >= 2) {
-    htDraw = Number(f.ht[0]) === Number(f.ht[1]);
+    htH = Number(f.ht[0]);
+    htA = Number(f.ht[1]);
+    htDraw = htH === htA;
   } else if (hasEvents) {
-    let htH = 0;
-    let htA = 0;
+    let h1 = 0;
+    let a1 = 0;
     for (const ev of events) {
       if (ev.type === 'halftime') break;
       if (Number(ev.min || 0) > 45 && !events.some((x) => x.type === 'halftime')) break;
       if (ev.type === 'goal' || ev.type === 'own_goal') {
-        if (ev.team === 'home') htH++;
-        else if (ev.team === 'away') htA++;
+        if (ev.team === 'home') h1++;
+        else if (ev.team === 'away') a1++;
       }
     }
-    htDraw = htH === htA;
+    htH = h1;
+    htA = a1;
+    htDraw = h1 === a1;
   }
 
-  return { hg, ag, totalYc, totalCorners, totalPenalties, totalRed, lateGoal75, htDraw, hasStats };
+  if (hg === 0 && ag === 0) {
+    firstGoalSide = 'none';
+  } else if (hasEvents) {
+    const fg = events.find((e) => e.type === 'goal' || e.type === 'own_goal');
+    if (fg && (fg.team === 'home' || fg.team === 'away')) firstGoalSide = fg.team;
+  }
+
+  return {
+    hg,
+    ag,
+    htH,
+    htA,
+    htDraw,
+    firstGoalSide,
+    totalYc,
+    totalCorners,
+    homeCorners,
+    awayCorners,
+    totalSot,
+    totalFouls,
+    totalPenalties,
+    totalRed,
+    lateGoal75,
+    hasStats,
+  };
 }
 
 export function settlePredictionsForFixture(ctx: AdServerContext, f: any): number {
@@ -1135,12 +1912,18 @@ export function settlePredictionsForFixture(ctx: AdServerContext, f: any): numbe
   if (!Number.isFinite(hg) || !Number.isFinite(ag)) return 0;
   const sum = extractFixtureMatchSummary(ctx, f);
   const actual: '1' | 'X' | '2' = hg > ag ? '1' : hg < ag ? '2' : 'X';
+  const tot = hg + ag;
+  const diffG = hg - ag;
+  const bothScored = hg > 0 && ag > 0;
+
   let settledCount = 0;
   const nowIso = new Date().toISOString();
 
   const detailBits: string[] = [`${hg}:${ag}`];
+  if (sum.htH !== null && sum.htA !== null) detailBits.push(`1Т ${sum.htH}:${sum.htA}`);
   if (sum.totalYc !== null) detailBits.push(`ЖК ${sum.totalYc}`);
   if (sum.totalCorners !== null) detailBits.push(`Угл ${sum.totalCorners}`);
+  if (sum.totalSot !== null) detailBits.push(`Створ ${sum.totalSot}`);
   if (sum.totalPenalties !== null && sum.totalPenalties > 0) detailBits.push(`Пен ${sum.totalPenalties}`);
   if (sum.totalRed !== null && sum.totalRed > 0) detailBits.push(`КК ${sum.totalRed}`);
   const statSummaryText = detailBits.join(' · ');
@@ -1151,7 +1934,7 @@ export function settlePredictionsForFixture(ctx: AdServerContext, f: any): numbe
     const market = String(p.market || 'outcome');
     const found = findMarketOption(market, p.pick);
     const odd = Number(p.odd || found?.option.odd || 2.0);
-    const basePts = Number(p.basePts || Math.max(2, Math.round(odd * 1.5)) || found?.option.basePts || 3);
+    const basePts = Number(p.basePts || Math.max(1, Math.round(odd * 1.5)) || found?.option.basePts || 3);
 
     let outcomeState: 'won' | 'lost' | 'void' = 'lost';
     let exactBonus = false;
@@ -1175,22 +1958,138 @@ export function settlePredictionsForFixture(ctx: AdServerContext, f: any): numbe
         (p.pick === '12' && (actual === '1' || actual === '2')) ||
         (p.pick === 'X2' && (actual === 'X' || actual === '2'));
       outcomeState = ok ? 'won' : 'lost';
+    } else if (market === 'hcp_0') {
+      if (diffG === 0) outcomeState = 'void';
+      else outcomeState = p.pick === 'f1_0' ? (diffG > 0 ? 'won' : 'lost') : (diffG < 0 ? 'won' : 'lost');
+    } else if (market === 'hcp_m10') {
+      if (diffG === 1) outcomeState = 'void';
+      else outcomeState = p.pick === 'f1_m10' ? (diffG >= 2 ? 'won' : 'lost') : (diffG <= 0 ? 'won' : 'lost');
+    } else if (market === 'hcp_m15') {
+      outcomeState = p.pick === 'f1_m15' ? (diffG >= 2 ? 'won' : 'lost') : (diffG <= 1 ? 'won' : 'lost');
+    } else if (market === 'hcp_p10') {
+      if (diffG === -1) outcomeState = 'void';
+      else outcomeState = p.pick === 'f1_p10' ? (diffG >= 0 ? 'won' : 'lost') : (diffG <= -2 ? 'won' : 'lost');
+    } else if (market === 'hcp_p15') {
+      outcomeState = p.pick === 'f1_p15' ? (diffG >= -1 ? 'won' : 'lost') : (diffG <= -2 ? 'won' : 'lost');
+    } else if (market === 'total_1_5') {
+      outcomeState = p.pick === 'over_1_5' ? (tot >= 2 ? 'won' : 'lost') : (tot <= 1 ? 'won' : 'lost');
+    } else if (market === 'total_2_0') {
+      if (tot === 2) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_2_0' ? (tot >= 3 ? 'won' : 'lost') : (tot <= 1 ? 'won' : 'lost');
     } else if (market === 'total_goals') {
-      const tot = hg + ag;
-      outcomeState = p.pick === 'over_2_5' ? (tot > 2 ? 'won' : 'lost') : tot <= 2 ? 'won' : 'lost';
+      outcomeState = p.pick === 'over_2_5' ? (tot >= 3 ? 'won' : 'lost') : (tot <= 2 ? 'won' : 'lost');
+    } else if (market === 'total_3_0') {
+      if (tot === 3) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_3_0' ? (tot >= 4 ? 'won' : 'lost') : (tot <= 2 ? 'won' : 'lost');
+    } else if (market === 'total_3_5') {
+      outcomeState = p.pick === 'over_3_5' ? (tot >= 4 ? 'won' : 'lost') : (tot <= 3 ? 'won' : 'lost');
     } else if (market === 'btts') {
-      const both = hg > 0 && ag > 0;
-      outcomeState = p.pick === 'yes' ? (both ? 'won' : 'lost') : !both ? 'won' : 'lost';
+      outcomeState = p.pick === 'yes' ? (bothScored ? 'won' : 'lost') : (!bothScored ? 'won' : 'lost');
+    } else if (market === 'it1_0_5') {
+      outcomeState = p.pick === 'over_0_5' ? (hg >= 1 ? 'won' : 'lost') : (hg === 0 ? 'won' : 'lost');
+    } else if (market === 'it1_1_5') {
+      outcomeState = p.pick === 'over_1_5' ? (hg >= 2 ? 'won' : 'lost') : (hg <= 1 ? 'won' : 'lost');
+    } else if (market === 'it2_0_5') {
+      outcomeState = p.pick === 'over_0_5' ? (ag >= 1 ? 'won' : 'lost') : (ag === 0 ? 'won' : 'lost');
+    } else if (market === 'it2_1_5') {
+      outcomeState = p.pick === 'over_1_5' ? (ag >= 2 ? 'won' : 'lost') : (ag <= 1 ? 'won' : 'lost');
+    } else if (market === 'first_goal') {
+      outcomeState = sum.firstGoalSide === null ? 'void' : (p.pick === sum.firstGoalSide ? 'won' : 'lost');
+    } else if (market === 'both_halves_goal') {
+      if (sum.htH === null || sum.htA === null) outcomeState = 'void';
+      else {
+        const g1 = sum.htH + sum.htA;
+        const g2 = Math.max(0, (hg - sum.htH) + (ag - sum.htA));
+        const ok = g1 >= 1 && g2 >= 1;
+        outcomeState = p.pick === 'yes' ? (ok ? 'won' : 'lost') : (!ok ? 'won' : 'lost');
+      }
+    } else if (market === 'combo_w_total') {
+      const checks: Record<string, boolean> = {
+        '1_over15': actual === '1' && tot >= 2,
+        '1_over25': actual === '1' && tot >= 3,
+        '1_under25': actual === '1' && tot <= 2,
+        '2_over15': actual === '2' && tot >= 2,
+        '2_over25': actual === '2' && tot >= 3,
+        '2_under25': actual === '2' && tot <= 2,
+        '1x_over15': (actual === '1' || actual === 'X') && tot >= 2,
+        'x2_over15': (actual === 'X' || actual === '2') && tot >= 2,
+        'x_under25': actual === 'X' && tot <= 2,
+      };
+      outcomeState = checks[p.pick] ? 'won' : 'lost';
+    } else if (market === 'combo_w_btts') {
+      const checks: Record<string, boolean> = {
+        '1_btts_y': actual === '1' && bothScored,
+        '1_btts_n': actual === '1' && !bothScored,
+        '2_btts_y': actual === '2' && bothScored,
+        '2_btts_n': actual === '2' && !bothScored,
+        '1x_btts_y': (actual === '1' || actual === 'X') && bothScored,
+        'x2_btts_y': (actual === 'X' || actual === '2') && bothScored,
+      };
+      outcomeState = checks[p.pick] ? 'won' : 'lost';
+    } else if (market === 'ht_outcome') {
+      if (sum.htH === null || sum.htA === null) outcomeState = 'void';
+      else {
+        const htActual = sum.htH > sum.htA ? '1' : sum.htH < sum.htA ? '2' : 'X';
+        outcomeState = p.pick === htActual ? 'won' : 'lost';
+      }
+    } else if (market === 'ht_total_0_5') {
+      if (sum.htH === null || sum.htA === null) outcomeState = 'void';
+      else {
+        const htTot = sum.htH + sum.htA;
+        outcomeState = p.pick === 'over_0_5' ? (htTot >= 1 ? 'won' : 'lost') : (htTot === 0 ? 'won' : 'lost');
+      }
+    } else if (market === 'ht_total_1_5') {
+      if (sum.htH === null || sum.htA === null) outcomeState = 'void';
+      else {
+        const htTot = sum.htH + sum.htA;
+        outcomeState = p.pick === 'over_1_5' ? (htTot >= 2 ? 'won' : 'lost') : (htTot <= 1 ? 'won' : 'lost');
+      }
+    } else if (market === 'ht_ft') {
+      if (sum.htH === null || sum.htA === null) outcomeState = 'void';
+      else {
+        const htActual = sum.htH > sum.htA ? '1' : sum.htH < sum.htA ? '2' : 'X';
+        outcomeState = p.pick === `${htActual}_${actual}` ? 'won' : 'lost';
+      }
     } else if (market === 'exact_score') {
       const eh = Number(p.exactHome);
       const ea = Number(p.exactAway);
       outcomeState = Number.isFinite(eh) && Number.isFinite(ea) && eh === hg && ea === ag ? 'won' : 'lost';
     } else if (market === 'yellow_cards') {
       if (sum.totalYc === null) outcomeState = 'void';
-      else outcomeState = p.pick === 'over_3_5' ? (sum.totalYc >= 4 ? 'won' : 'lost') : sum.totalYc <= 3 ? 'won' : 'lost';
+      else outcomeState = p.pick === 'over_3_5' ? (sum.totalYc >= 4 ? 'won' : 'lost') : (sum.totalYc <= 3 ? 'won' : 'lost');
+    } else if (market === 'yc_4_5') {
+      if (sum.totalYc === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_4_5' ? (sum.totalYc >= 5 ? 'won' : 'lost') : (sum.totalYc <= 4 ? 'won' : 'lost');
     } else if (market === 'corners') {
       if (sum.totalCorners === null) outcomeState = 'void';
-      else outcomeState = p.pick === 'over_8_5' ? (sum.totalCorners >= 9 ? 'won' : 'lost') : sum.totalCorners <= 8 ? 'won' : 'lost';
+      else outcomeState = p.pick === 'over_8_5' ? (sum.totalCorners >= 9 ? 'won' : 'lost') : (sum.totalCorners <= 8 ? 'won' : 'lost');
+    } else if (market === 'corners_9_5') {
+      if (sum.totalCorners === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_9_5' ? (sum.totalCorners >= 10 ? 'won' : 'lost') : (sum.totalCorners <= 9 ? 'won' : 'lost');
+    } else if (market === 'corners_outcome') {
+      if (sum.homeCorners === null || sum.awayCorners === null) outcomeState = 'void';
+      else {
+        const coAct = sum.homeCorners > sum.awayCorners ? '1' : sum.homeCorners < sum.awayCorners ? '2' : 'X';
+        outcomeState = p.pick === coAct ? 'won' : 'lost';
+      }
+    } else if (market === 'sot_7_5') {
+      if (sum.totalSot === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_7_5' ? (sum.totalSot >= 8 ? 'won' : 'lost') : (sum.totalSot <= 7 ? 'won' : 'lost');
+    } else if (market === 'sot_9_5') {
+      if (sum.totalSot === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_9_5' ? (sum.totalSot >= 10 ? 'won' : 'lost') : (sum.totalSot <= 9 ? 'won' : 'lost');
+    } else if (market === 'fouls_21_5') {
+      if (sum.totalFouls === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'over_21_5' ? (sum.totalFouls >= 22 ? 'won' : 'lost') : (sum.totalFouls <= 21 ? 'won' : 'lost');
+    } else if (market === 'penalty_yn') {
+      if (sum.totalPenalties === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'yes' ? (sum.totalPenalties > 0 ? 'won' : 'lost') : (sum.totalPenalties === 0 ? 'won' : 'lost');
+    } else if (market === 'red_yn') {
+      if (sum.totalRed === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'yes' ? (sum.totalRed > 0 ? 'won' : 'lost') : (sum.totalRed === 0 ? 'won' : 'lost');
+    } else if (market === 'goal_75_yn') {
+      if (sum.lateGoal75 === null) outcomeState = 'void';
+      else outcomeState = p.pick === 'yes' ? (sum.lateGoal75 ? 'won' : 'lost') : (!sum.lateGoal75 ? 'won' : 'lost');
     } else if (market === 'specials') {
       if (p.pick === 'penalty_yes') {
         outcomeState = sum.totalPenalties === null ? 'void' : sum.totalPenalties > 0 ? 'won' : 'lost';
@@ -1210,20 +2109,20 @@ export function settlePredictionsForFixture(ctx: AdServerContext, f: any): numbe
     p.settledAt = nowIso;
 
     if (outcomeState === 'won') {
-      const pts = basePts * stake + (exactBonus ? 5 : 0);
-      const coinsBack = Math.max(1, Math.round(stake * odd)) + (exactBonus ? 2 : 0);
+      const pts = Math.max(1, Math.round(stake * odd * 1.5)) + (exactBonus ? 5 : 0);
+      const coinsBack = roundCoins(stake * odd) + (exactBonus ? 2 : 0);
       p.pointsAwarded = pts;
       p.coinsWon = coinsBack;
       p.exactHit = exactBonus || market === 'exact_score';
       const w = ensureWallet(db, p.actorKey);
-      w.coins = Number(w.coins || 0) + coinsBack;
-      w.totalEarnedCoins = Number(w.totalEarnedCoins || 0) + coinsBack;
+      w.coins = roundCoins(Number(w.coins || 0) + coinsBack);
+      w.totalEarnedCoins = roundCoins(Number(w.totalEarnedCoins || 0) + coinsBack);
     } else if (outcomeState === 'void') {
       p.pointsAwarded = 0;
-      p.coinsWon = stake;
+      p.coinsWon = roundCoins(stake);
       p.exactHit = false;
       const w = ensureWallet(db, p.actorKey);
-      w.coins = Number(w.coins || 0) + stake;
+      w.coins = roundCoins(Number(w.coins || 0) + stake);
     } else {
       p.pointsAwarded = 0;
       p.coinsWon = 0;
@@ -2497,14 +3396,17 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
           awayLogo: ctx.teamLogo(f.away),
           markets: fxLine.markets,
           quickScores: fxLine.quickScores,
+          exactMatrix: fxLine.exactMatrix,
           expectedGoals: fxLine.expectedGoals,
+          probs: fxLine.probs,
+          refereeName: fxLine.refereeName,
         };
       });
 
     const allPreds = Array.isArray(db.predictions) ? db.predictions : [];
     const myPredictions = allPreds
       .filter((p: any) => p.actorKey === actor.actorKey && p.season === season)
-      .slice(-60)
+      .slice(-120)
       .reverse()
       .map((p: any) => {
         const fxObj = (db.fixtures || []).find((f: any) => f.id === p.fixtureId);
@@ -2513,7 +3415,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         return {
           ...p,
           market,
-          marketTitle: found?.marketDef.title || 'Исход матча',
+          marketTitle: p.marketTitle || found?.marketDef.title || 'Исход матча',
           pickLabel: p.pickLabel || (market === 'exact_score' ? `Точный счёт ${p.exactHome}:${p.exactAway}` : found?.option.label || p.pick),
           homeName: fxObj ? ctx.tn(fxObj.home) : p.homeName || 'Хозяева',
           awayName: fxObj ? ctx.tn(fxObj.away) : p.awayName || 'Гости',
@@ -2546,8 +3448,8 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       profile,
       profileKind: profile.profileKind || (actor.type === 'club' ? 'owner' : actor.type === 'admin' ? 'admin' : 'spectator'),
       wallet: {
-        coins: wallet.coins,
-        totalEarnedCoins: wallet.totalEarnedCoins,
+        coins: roundCoins(Number(wallet.coins || 0)),
+        totalEarnedCoins: roundCoins(Number(wallet.totalEarnedCoins || 0)),
         adCounts: wallet.adCounts,
         resetAt: wallet.cycleStartedAt ? wallet.cycleStartedAt + CYCLE_MS : null,
       },
@@ -2590,87 +3492,137 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     res.json(credit);
   });
 
+  const validateAndStageBets = (rawItems: any[], actorKey: string) => {
+    const db = ctx.getDb();
+    if (!Array.isArray(rawItems) || !rawItems.length) {
+      return { ok: false as const, error: 'Купон пуст — выберите хотя бы один пункт линии.' };
+    }
+    if (rawItems.length > 30) {
+      return { ok: false as const, error: 'Максимум 30 ставок в одном купоне.' };
+    }
+    const wallet = ensureWallet(db, actorKey);
+    db.predictions ||= [];
+
+    const lineCache = new Map<string, ReturnType<typeof computeFixtureMarkets>>();
+    const seenKeys = new Set<string>();
+    const staged: any[] = [];
+    let totalStake = 0;
+
+    for (const item of rawItems) {
+      const fixtureId = String(item?.fixtureId || '').trim();
+      const market = String(item?.market || 'outcome').trim();
+      const pick = String(item?.pick || '').trim();
+      const stake = Math.max(1, Math.min(500, Math.round(Number(item?.stake || 1))));
+      if (!Number.isFinite(stake) || stake < 1) {
+        return { ok: false as const, error: 'Укажите корректную сумму монет (от 1) для каждого пункта.' };
+      }
+
+      const found = findMarketOption(market, pick);
+      if (!found || market === 'specials') {
+        return { ok: false as const, error: `Неизвестный пункт линии (${market}:${pick}).` };
+      }
+
+      const f = (db.fixtures || []).find((x: any) => x.id === fixtureId);
+      if (!f) return { ok: false as const, error: 'Один из матчей не найден.' };
+      if (f.status !== 'scheduled') return { ok: false as const, error: `Приём ставок на матч «${ctx.tn(f.home)} — ${ctx.tn(f.away)}» уже закрыт.` };
+
+      const rawEh = item?.exactHome;
+      const rawEa = item?.exactAway;
+      const hasExact = rawEh !== '' && rawEh !== null && rawEh !== undefined && rawEa !== '' && rawEa !== null && rawEa !== undefined;
+      const exactHome = market === 'exact_score' && hasExact ? Math.max(0, Math.min(20, Math.round(Number(rawEh)))) : null;
+      const exactAway = market === 'exact_score' && hasExact ? Math.max(0, Math.min(20, Math.round(Number(rawEa)))) : null;
+      if (market === 'exact_score' && (exactHome === null || exactAway === null)) {
+        return { ok: false as const, error: 'Укажите точный счёт хозяев и гостей (например, 2:1).' };
+      }
+
+      const itemKey = market === 'exact_score'
+        ? `${fixtureId}|${market}|${exactHome}:${exactAway}`
+        : `${fixtureId}|${market}|${pick}`;
+      if (seenKeys.has(itemKey)) {
+        return { ok: false as const, error: 'В купоне есть дублирующийся пункт.' };
+      }
+      seenKeys.add(itemKey);
+
+      const duplicate = db.predictions.find((p: any) => {
+        if (p.fixtureId !== fixtureId || p.actorKey !== actorKey || (p.market || 'outcome') !== market) return false;
+        if (market === 'exact_score') return Number(p.exactHome) === exactHome && Number(p.exactAway) === exactAway;
+        return p.pick === pick;
+      });
+      if (duplicate) {
+        return { ok: false as const, error: `Ставка «${duplicate.pickLabel}» в матче ${ctx.tn(f.home)} — ${ctx.tn(f.away)} уже принята.` };
+      }
+
+      let fxLine = lineCache.get(fixtureId);
+      if (!fxLine) {
+        fxLine = computeFixtureMarkets(ctx, f);
+        lineCache.set(fixtureId, fxLine);
+      }
+      const fxMarket = fxLine.markets.find((m) => m.id === market);
+      const fxOption = fxMarket?.options.find((o) => o.pick === pick) || found.option;
+      const finalOdd = market === 'exact_score'
+        ? fxLine.calcExactOdd(exactHome!, exactAway!)
+        : Number(fxOption.odd || found.option.odd);
+      const finalBasePts = Math.max(1, Math.round(finalOdd * 1.5));
+      const pickLabel = market === 'exact_score'
+        ? `Точный счёт ${exactHome}:${exactAway}`
+        : fxOption.label;
+
+      totalStake += stake;
+      staged.push({
+        f,
+        season: f.season || ctx.S(),
+        market,
+        marketTitle: fxMarket?.title || found.marketDef.title,
+        pick,
+        pickLabel,
+        odd: finalOdd,
+        basePts: finalBasePts,
+        exactHome,
+        exactAway,
+        stake,
+      });
+    }
+
+    if (roundCoins(Number(wallet.coins || 0)) < totalStake) {
+      return {
+        ok: false as const,
+        error: `Недостаточно монет: сумма ставок ${totalStake} мон., на балансе ${roundCoins(Number(wallet.coins || 0))} мон. Посмотрите рекламу, чтобы получить монеты.`,
+      };
+    }
+
+    return { ok: true as const, wallet, staged, totalStake };
+  };
+
   app.post('/api/predictions/bet', (req: any, res) => {
     const db = ctx.getDb();
-    const fixtureId = String(req.body?.fixtureId || '').trim();
-    const market = String(req.body?.market || 'outcome').trim();
-    const pick = String(req.body?.pick || '').trim();
-    const stake = Math.max(1, Math.min(10, Math.round(Number(req.body?.stake || 1))));
-
-    const found = findMarketOption(market, pick);
-    if (!found) {
-      return ctx.fail(res, 'Неизвестный тип прогноза или исход.');
-    }
-
-    const f = (db.fixtures || []).find((x: any) => x.id === fixtureId);
-    if (!f) return ctx.fail(res, 'Матч не найден');
-    if (f.status !== 'scheduled') return ctx.fail(res, 'Приём прогнозов на этот матч уже закрыт');
-
-    const rawEh = req.body?.exactHome;
-    const rawEa = req.body?.exactAway;
-    const hasExact = rawEh !== '' && rawEh !== null && rawEh !== undefined && rawEa !== '' && rawEa !== null && rawEa !== undefined;
-    const exactHome = hasExact ? Math.max(0, Math.min(20, Math.round(Number(rawEh)))) : null;
-    const exactAway = hasExact ? Math.max(0, Math.min(20, Math.round(Number(rawEa)))) : null;
-    if (market === 'exact_score' && (exactHome === null || exactAway === null)) {
-      return ctx.fail(res, 'Укажите точный счёт хозяев и гостей (например, 2:1)');
-    }
-
     const hints = extractTgHintsFromReq(ctx, req);
     const actor = resolveActor(req);
     ensureOwnerProfile(ctx, actor.actorKey, hints.name, hints.photo, { tgId: hints.tgId, username: hints.username });
-    const wallet = ensureWallet(db, actor.actorKey);
-    db.predictions ||= [];
 
-    const season = f.season || ctx.S();
-    const existing = db.predictions.find((p: any) =>
-      p.fixtureId === fixtureId &&
-      p.actorKey === actor.actorKey &&
-      (p.market || 'outcome') === market
-    );
-    if (existing) {
-      return ctx.fail(res, `Вы уже сделали прогноз в категории «${found.marketDef.title}» на этот матч.`);
-    }
-    if (Number(wallet.coins || 0) < stake) {
-      return ctx.fail(res, `Недостаточно монет (нужно ${stake}, на балансе ${wallet.coins}). Посмотрите рекламу, чтобы заработать монеты!`);
-    }
+    const check = validateAndStageBets([req.body || {}], actor.actorKey);
+    if (!check.ok) return ctx.fail(res, check.error);
 
-    const fxLine = computeFixtureMarkets(ctx, f);
-    const fxMarket = fxLine.markets.find((m) => m.id === market);
-    const fxOption = fxMarket?.options.find((o) => o.pick === pick) || found.option;
-    const finalOdd = market === 'exact_score'
-      ? fxLine.calcExactOdd(exactHome!, exactAway!)
-      : Number(fxOption.odd || found.option.odd);
-    const finalBasePts = market === 'exact_score'
-      ? Math.max(8, Math.round(finalOdd * 1.4))
-      : Number(fxOption.basePts || found.option.basePts || 3);
-
-    const pickLabel =
-      market === 'outcome'
-        ? (pick === '1' ? `П1 (${ctx.tn(f.home)})` : pick === '2' ? `П2 (${ctx.tn(f.away)})` : 'Ничья (Х)')
-        : market === 'exact_score'
-          ? `Точный счёт ${exactHome}:${exactAway}`
-          : fxOption.label;
-
-    wallet.coins = Number(wallet.coins) - stake;
+    const s = check.staged[0];
+    check.wallet.coins = roundCoins(Number(check.wallet.coins) - s.stake);
     const pred = {
       id: 'pr_' + ctx.uid(),
-      season,
+      season: s.season,
       actorKey: actor.actorKey,
       teamId: actor.teamId,
-      fixtureId: f.id,
-      homeName: ctx.tn(f.home),
-      awayName: ctx.tn(f.away),
-      label: f.label || `Тур ${f.round || 1}`,
-      date: f.date,
-      market,
-      marketTitle: fxMarket?.title || found.marketDef.title,
-      pick,
-      pickLabel,
-      odd: finalOdd,
-      basePts: finalBasePts,
-      exactHome,
-      exactAway,
-      stake,
+      fixtureId: s.f.id,
+      homeName: ctx.tn(s.f.home),
+      awayName: ctx.tn(s.f.away),
+      label: s.f.label || `Тур ${s.f.round || 1}`,
+      date: s.f.date,
+      market: s.market,
+      marketTitle: s.marketTitle,
+      pick: s.pick,
+      pickLabel: s.pickLabel,
+      odd: s.odd,
+      basePts: s.basePts,
+      exactHome: s.exactHome,
+      exactAway: s.exactAway,
+      stake: s.stake,
       status: 'pending',
       pointsAwarded: 0,
       coinsWon: 0,
@@ -2682,8 +3634,61 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     res.json({
       ok: 1,
       prediction: pred,
-      coins: wallet.coins,
-      message: `Прогноз «${pickLabel}» (×${finalOdd.toFixed(2)}) принят — ${stake} мон.!`,
+      coins: check.wallet.coins,
+      message: `Ставка «${s.pickLabel}» (×${s.odd.toFixed(2)}) принята — списано ${s.stake} мон.`,
+    });
+  });
+
+  app.post('/api/predictions/bet-batch', (req: any, res) => {
+    const db = ctx.getDb();
+    const hints = extractTgHintsFromReq(ctx, req);
+    const actor = resolveActor(req);
+    ensureOwnerProfile(ctx, actor.actorKey, hints.name, hints.photo, { tgId: hints.tgId, username: hints.username });
+
+    const check = validateAndStageBets(req.body?.bets, actor.actorKey);
+    if (!check.ok) return ctx.fail(res, check.error);
+
+    check.wallet.coins = roundCoins(Number(check.wallet.coins) - check.totalStake);
+    const created: any[] = [];
+    const nowIso = new Date().toISOString();
+    for (const s of check.staged) {
+      const pred = {
+        id: 'pr_' + ctx.uid(),
+        season: s.season,
+        actorKey: actor.actorKey,
+        teamId: actor.teamId,
+        fixtureId: s.f.id,
+        homeName: ctx.tn(s.f.home),
+        awayName: ctx.tn(s.f.away),
+        label: s.f.label || `Тур ${s.f.round || 1}`,
+        date: s.f.date,
+        market: s.market,
+        marketTitle: s.marketTitle,
+        pick: s.pick,
+        pickLabel: s.pickLabel,
+        odd: s.odd,
+        basePts: s.basePts,
+        exactHome: s.exactHome,
+        exactAway: s.exactAway,
+        stake: s.stake,
+        status: 'pending',
+        pointsAwarded: 0,
+        coinsWon: 0,
+        createdAt: nowIso,
+      };
+      db.predictions.push(pred);
+      created.push(pred);
+    }
+    ctx.save();
+
+    res.json({
+      ok: 1,
+      predictions: created,
+      coins: check.wallet.coins,
+      totalStake: check.totalStake,
+      message: created.length === 1
+        ? `Ставка «${created[0].pickLabel}» (×${created[0].odd.toFixed(2)}) принята — ${check.totalStake} мон.`
+        : `Принято ставок: ${created.length} (списано ${check.totalStake} мон.)!`,
     });
   });
 
