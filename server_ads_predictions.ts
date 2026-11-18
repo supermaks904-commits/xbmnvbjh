@@ -75,33 +75,33 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
   },
   {
     key: 'coins_short',
-    label: 'Прогнозы — Короткая реклама 5с (+1 монета)',
+    label: 'Прогнозы — Быстрый пас (5с, +1 монета)',
     category: 'predictions',
     format: 'short',
     durationSec: 5,
     requiresClick: false,
     defaultBlockId: 'int-coins-short',
-    maxPerCycle: 15,
+    maxPerCycle: 30,
   },
   {
     key: 'coins_banner',
-    label: 'Прогнозы — Баннерная реклама (+2 монеты)',
+    label: 'Прогнозы — Щит у поля (баннер, +2 монеты)',
     category: 'predictions',
     format: 'banner',
     durationSec: 5,
     requiresClick: false,
     defaultBlockId: 'int-coins-banner',
-    maxPerCycle: 15,
+    maxPerCycle: 30,
   },
   {
     key: 'coins_long',
-    label: 'Прогнозы — Длинная реклама 30с (+3 монеты)',
+    label: 'Прогнозы — Перерыв матча (30с, +3 монеты)',
     category: 'predictions',
     format: 'long',
     durationSec: 30,
     requiresClick: false,
     defaultBlockId: 'int-coins-long',
-    maxPerCycle: 15,
+    maxPerCycle: 30,
   },
   {
     key: 'nt_propose_player',
@@ -165,7 +165,7 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
   },
   {
     key: 'bot_coins',
-    label: 'Прогнозы (Telegram-бот Adsgram) — Пост в боте (+2 монеты)',
+    label: 'Прогнозы (Telegram-бот Adsgram) — Прямой репортаж (+2 монеты)',
     category: 'predictions',
     format: 'bot',
     durationSec: 10,
@@ -241,11 +241,30 @@ export const SPONSORS: SponsorConfig[] = [
   },
 ];
 
-const CYCLE_MS = 2 * 60 * 1000;
+const CYCLE_MS = 24 * 60 * 60 * 1000;
+const AD_COOLDOWN_MS = 2 * 60 * 1000;
 const FRIENDLY_BREAK_LIMIT = 9;
 const STARTER_COINS = 5;
 const RFS_REQUIRED_VIEWS = 35;
-const PREDICTION_AD_MAX_PER_CYCLE = 15;
+const PREDICTION_AD_MAX_PER_CYCLE = 30;
+const PREDICTION_BOT_AD_MAX_PER_CYCLE = 15;
+
+function getCoinOfferMaxViews(blockKey: string): number {
+  return blockKey === 'bot_coins' ? PREDICTION_BOT_AD_MAX_PER_CYCLE : PREDICTION_AD_MAX_PER_CYCLE;
+}
+
+function getCooldownLeftMs(lastAt: any): number {
+  const ts = Number(lastAt || 0);
+  if (!ts) return 0;
+  return Math.max(0, ts + AD_COOLDOWN_MS - Date.now());
+}
+
+function fmtCooldownWords(ms: number): string {
+  const sec = Math.max(1, Math.ceil(ms / 1000));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m} мин ${String(s).padStart(2, '0')} сек` : `${s} сек`;
+}
 
 const SEASON_PRIZES = [
   {
@@ -793,10 +812,10 @@ function buildPoissonGrid(lambdaH: number, lambdaA: number, maxG = 7): number[][
     grid[h] = [];
     for (let a = 0; a <= maxG; a++) {
       let p = poissonP(h, lambdaH) * poissonP(a, lambdaA);
-      // Dixon-Coles low-score dependence adjustment
-      if (h === 0 && a === 0) p *= 1.09;
-      else if (h === 1 && a === 1) p *= 1.07;
-      else if ((h === 1 && a === 0) || (h === 0 && a === 1)) p *= 0.96;
+      // Slight low-score calibration without over-inflating draws
+      if (h === 0 && a === 0) p *= 0.98;
+      else if (h === 1 && a === 1) p *= 1.01;
+      else if ((h === 1 && a === 0) || (h === 0 && a === 1)) p *= 0.99;
       grid[h][a] = p;
       sumGrid += p;
     }
@@ -868,9 +887,9 @@ function getTeamFormAndStrength(
   const attOvr = attList.length ? attList.reduce((s: number, x: number) => s + x, 0) / attList.length : ovr;
   const defOvr = defList.length ? defList.reduce((s: number, x: number) => s + x, 0) / defList.length : ovr;
 
-  // Club financial/reputation edge so top-budget clubs properly price as favorites even when raw OVRs are tight
+  // Club financial/reputation edge so top clubs cleanly separate from bottom underdogs
   const rawBudget = Number(t?.budget || 6_000_000);
-  const budgetEdge = clampNum(Math.log10(Math.max(500_000, rawBudget) / 6_500_000) * 2.1, -1.7, 2.3);
+  const budgetEdge = clampNum(Math.log10(Math.max(500_000, rawBudget) / 6_000_000) * 3.1, -2.6, 3.8);
 
   // Season form from completed fixtures (exponential weight as season progresses)
   const season = ctx.S();
@@ -914,8 +933,8 @@ export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
 
   const homePower = home.ovr + home.budgetEdge + home.formDelta + home.compTier;
   const awayPower = away.ovr + away.budgetEdge + away.formDelta + away.compTier;
-  const homeAdv = isNeutral ? 0 : 1.35;
-  const diff = clampNum((homePower + homeAdv) - awayPower, -14, 14);
+  const homeAdv = isNeutral ? 0 : 1.65;
+  const diff = clampNum((homePower + homeAdv) - awayPower, -15, 15);
 
   const tempoShiftH = clampNum((home.attOvr - away.defOvr) * 0.028, -0.15, 0.15);
   const tempoShiftA = clampNum((away.attOvr - home.defOvr) * 0.028, -0.15, 0.15);
@@ -936,9 +955,9 @@ export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
   const badPitch = /(дожд|снег|ливн|тяжёл|тяжел|гряз)/.test(wTxt);
   const weatherTempo = badPitch ? 0.94 : 1.0;
 
-  const baseGoal = isNeutral ? 1.24 : 1.27;
-  const lambdaH = clampNum(baseGoal * Math.exp(0.088 * diff) * (1 + tempoShiftH) * styleTempo(home.style, away.style) * weatherTempo, 0.45, 2.95);
-  const lambdaA = clampNum(baseGoal * Math.exp(-0.088 * diff) * (1 + tempoShiftA) * styleTempo(away.style, home.style) * weatherTempo, 0.40, 2.75);
+  const baseGoal = isNeutral ? 1.33 : 1.37;
+  const lambdaH = clampNum(baseGoal * Math.exp(0.112 * diff) * (1 + tempoShiftH) * styleTempo(home.style, away.style) * weatherTempo, 0.45, 3.15);
+  const lambdaA = clampNum(baseGoal * Math.exp(-0.112 * diff) * (1 + tempoShiftA) * styleTempo(away.style, home.style) * weatherTempo, 0.35, 2.85);
   const totalLambda = lambdaH + lambdaA;
 
   // Referee style
@@ -1067,45 +1086,45 @@ export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
   const pFirstHome = pAnyGoal * (lambdaH / Math.max(0.05, totalLambda));
   const pFirstAway = pAnyGoal * (lambdaA / Math.max(0.05, totalLambda));
 
-  // Coherent bookmaker odds
-  const [odd1, oddX, odd2] = tripleOddsFromProbs(p1, pX, p2, 1.06);
-  const odd1X = oddFromProb(p1 + pX, 1.055, 1.06, 4.5);
-  const odd12 = oddFromProb(p1 + p2, 1.055, 1.06, 2.8);
-  const oddX2 = oddFromProb(pX + p2, 1.055, 1.06, 5.2);
+  // Coherent bookmaker odds tuned so favorites & common lines sit in ~1.10–1.90 while clear underdogs & rare events carry 2.5–3+
+  const [odd1, oddX, odd2] = tripleOddsFromProbs(p1, pX, p2, 1.09);
+  const odd1X = oddFromProb(p1 + pX, 1.08, 1.05, 4.5);
+  const odd12 = oddFromProb(p1 + p2, 1.08, 1.05, 2.8);
+  const oddX2 = oddFromProb(pX + p2, 1.08, 1.05, 5.2);
 
-  const [oddF1_0, oddF2_0] = pairOddsFromProbs(p1, p2, 1.055);
-  const [oddF1_m10, oddF2_p10] = pairOddsFromProbs(pF1m10Win, pF1m10Loss, 1.058);
-  const [oddF1_m15, oddF2_p15] = pairOddsFromProbs(pF1m15, 1 - pF1m15, 1.058);
-  const [oddF1_p10, oddF2_m10] = pairOddsFromProbs(pF2m10Loss, pF2m10Win, 1.058);
-  const [oddF1_p15, oddF2_m15] = pairOddsFromProbs(1 - pF2m15, pF2m15, 1.058);
+  const [oddF1_0, oddF2_0] = pairOddsFromProbs(p1, p2, 1.085);
+  const [oddF1_m10, oddF2_p10] = pairOddsFromProbs(pF1m10Win, pF1m10Loss, 1.09);
+  const [oddF1_m15, oddF2_p15] = pairOddsFromProbs(pF1m15, 1 - pF1m15, 1.09);
+  const [oddF1_p10, oddF2_m10] = pairOddsFromProbs(pF2m10Loss, pF2m10Win, 1.09);
+  const [oddF1_p15, oddF2_m15] = pairOddsFromProbs(1 - pF2m15, pF2m15, 1.09);
 
-  const [oddO15, oddU15] = pairOddsFromProbs(pOver15, 1 - pOver15, 1.055);
-  const [oddO20, oddU20] = pairOddsFromProbs(pTot2Win, pTot2Loss, 1.055);
-  const [oddO25, oddU25] = pairOddsFromProbs(pOver25, 1 - pOver25, 1.055);
-  const [oddO30, oddU30] = pairOddsFromProbs(pTot3Win, pTot3Loss, 1.055);
-  const [oddO35, oddU35] = pairOddsFromProbs(pOver35, 1 - pOver35, 1.055);
-  const [oddBttsY, oddBttsN] = pairOddsFromProbs(pBtts, 1 - pBtts, 1.055);
+  const [oddO15, oddU15] = pairOddsFromProbs(pOver15, 1 - pOver15, 1.085);
+  const [oddO20, oddU20] = pairOddsFromProbs(pTot2Win, pTot2Loss, 1.09);
+  const [oddO25, oddU25] = pairOddsFromProbs(pOver25, 1 - pOver25, 1.095);
+  const [oddO30, oddU30] = pairOddsFromProbs(pTot3Win, pTot3Loss, 1.09);
+  const [oddO35, oddU35] = pairOddsFromProbs(pOver35, 1 - pOver35, 1.09);
+  const [oddBttsY, oddBttsN] = pairOddsFromProbs(pBtts, 1 - pBtts, 1.095);
 
-  const [oddIt1_05o, oddIt1_05u] = pairOddsFromProbs(pIt1_05, 1 - pIt1_05, 1.06);
-  const [oddIt1_15o, oddIt1_15u] = pairOddsFromProbs(pIt1_15, 1 - pIt1_15, 1.06);
-  const [oddIt2_05o, oddIt2_05u] = pairOddsFromProbs(pIt2_05, 1 - pIt2_05, 1.06);
-  const [oddIt2_15o, oddIt2_15u] = pairOddsFromProbs(pIt2_15, 1 - pIt2_15, 1.06);
+  const [oddIt1_05o, oddIt1_05u] = pairOddsFromProbs(pIt1_05, 1 - pIt1_05, 1.085);
+  const [oddIt1_15o, oddIt1_15u] = pairOddsFromProbs(pIt1_15, 1 - pIt1_15, 1.095);
+  const [oddIt2_05o, oddIt2_05u] = pairOddsFromProbs(pIt2_05, 1 - pIt2_05, 1.085);
+  const [oddIt2_15o, oddIt2_15u] = pairOddsFromProbs(pIt2_15, 1 - pIt2_15, 1.095);
 
-  const [oddHt1, oddHtX, oddHt2] = tripleOddsFromProbs(pHt1, pHtX, pHt2, 1.068);
-  const [oddHtO05, oddHtU05] = pairOddsFromProbs(pHtOver05, 1 - pHtOver05, 1.06);
-  const [oddHtO15, oddHtU15] = pairOddsFromProbs(pHtOver15, 1 - pHtOver15, 1.06);
-  const [oddBothHalvesY, oddBothHalvesN] = pairOddsFromProbs(pBothHalvesGoal, 1 - pBothHalvesGoal, 1.065);
-  const [oddFgH, oddFgNone, oddFgA] = tripleOddsFromProbs(pFirstHome, pZeroZero, pFirstAway, 1.068);
+  const [oddHt1, oddHtX, oddHt2] = tripleOddsFromProbs(pHt1, pHtX, pHt2, 1.10);
+  const [oddHtO05, oddHtU05] = pairOddsFromProbs(pHtOver05, 1 - pHtOver05, 1.085);
+  const [oddHtO15, oddHtU15] = pairOddsFromProbs(pHtOver15, 1 - pHtOver15, 1.095);
+  const [oddBothHalvesY, oddBothHalvesN] = pairOddsFromProbs(pBothHalvesGoal, 1 - pBothHalvesGoal, 1.095);
+  const [oddFgH, oddFgNone, oddFgA] = tripleOddsFromProbs(pFirstHome, pZeroZero, pFirstAway, 1.095);
 
   // Statistical lines (driven by team tactics, xG, derby, referee & weather)
   const attackScore = (s: string) => (s === 'attack' ? 0.8 : s === 'possession' ? 0.6 : s === 'press' ? 0.3 : s === 'bus' ? -0.6 : 0);
-  const cornerExpH = clampNum(4.5 + (lambdaH - 1.2) * 1.15 + attackScore(home.style) + (badPitch ? 0.35 : 0), 2.8, 7.2);
-  const cornerExpA = clampNum(3.9 + (lambdaA - 1.1) * 1.15 + attackScore(away.style) + (badPitch ? 0.35 : 0), 2.4, 6.8);
+  const cornerExpH = clampNum(4.7 + (lambdaH - 1.3) * 1.15 + attackScore(home.style) + (badPitch ? 0.35 : 0), 3.0, 7.5);
+  const cornerExpA = clampNum(4.1 + (lambdaA - 1.2) * 1.15 + attackScore(away.style) + (badPitch ? 0.35 : 0), 2.5, 7.0);
   const cornerExpTotal = cornerExpH + cornerExpA;
   const pCoOver85 = 1 - poissonCDF(8, cornerExpTotal);
   const pCoOver95 = 1 - poissonCDF(9, cornerExpTotal);
-  const [oddCoO85, oddCoU85] = pairOddsFromProbs(pCoOver85, 1 - pCoOver85, 1.065);
-  const [oddCoO95, oddCoU95] = pairOddsFromProbs(pCoOver95, 1 - pCoOver95, 1.065);
+  const [oddCoO85, oddCoU85] = pairOddsFromProbs(pCoOver85, 1 - pCoOver85, 1.095);
+  const [oddCoO95, oddCoU95] = pairOddsFromProbs(pCoOver95, 1 - pCoOver95, 1.095);
 
   // Corner 1X2
   let pCo1 = 0, pCoX = 0, pCo2 = 0;
@@ -1118,36 +1137,36 @@ export function computeFixtureMarkets(ctx: AdServerContext, f: any): {
       else pCo2 += p;
     }
   }
-  const [oddCo1, oddCoX, oddCo2] = tripleOddsFromProbs(pCo1, pCoX, pCo2, 1.07);
+  const [oddCo1, oddCoX, oddCo2] = tripleOddsFromProbs(pCo1, pCoX, pCo2, 1.10);
 
   // Yellow cards
   const pressCards = (home.style === 'press' ? 0.55 : home.style === 'bus' ? 0.30 : 0) + (away.style === 'press' ? 0.55 : away.style === 'bus' ? 0.30 : 0);
   const refCardDelta = refStyle === 'strict' ? 0.75 : refStyle === 'lenient' ? -0.55 : 0;
-  const ycExp = clampNum(3.45 + pressCards + (isDerby ? 0.95 : 0) + refCardDelta + (badPitch ? 0.25 : 0), 2.2, 6.2);
+  const ycExp = clampNum(3.65 + pressCards + (isDerby ? 0.95 : 0) + refCardDelta + (badPitch ? 0.25 : 0), 2.3, 6.4);
   const pYcOver35 = 1 - poissonCDF(3, ycExp);
   const pYcOver45 = 1 - poissonCDF(4, ycExp);
-  const [oddYcO35, oddYcU35] = pairOddsFromProbs(pYcOver35, 1 - pYcOver35, 1.065);
-  const [oddYcO45, oddYcU45] = pairOddsFromProbs(pYcOver45, 1 - pYcOver45, 1.065);
+  const [oddYcO35, oddYcU35] = pairOddsFromProbs(pYcOver35, 1 - pYcOver35, 1.095);
+  const [oddYcO45, oddYcU45] = pairOddsFromProbs(pYcOver45, 1 - pYcOver45, 1.095);
 
   // Shots on target (SOT)
-  const sotExp = clampNum(5.0 + totalLambda * 1.45 + (home.style === 'attack' ? 0.5 : 0) + (away.style === 'attack' ? 0.5 : 0), 5.5, 12.5);
+  const sotExp = clampNum(5.2 + totalLambda * 1.45 + (home.style === 'attack' ? 0.5 : 0) + (away.style === 'attack' ? 0.5 : 0), 5.8, 13.0);
   const pSot75 = 1 - poissonCDF(7, sotExp);
   const pSot95 = 1 - poissonCDF(9, sotExp);
-  const [oddSotO75, oddSotU75] = pairOddsFromProbs(pSot75, 1 - pSot75, 1.065);
-  const [oddSotO95, oddSotU95] = pairOddsFromProbs(pSot95, 1 - pSot95, 1.065);
+  const [oddSotO75, oddSotU75] = pairOddsFromProbs(pSot75, 1 - pSot75, 1.095);
+  const [oddSotO95, oddSotU95] = pairOddsFromProbs(pSot95, 1 - pSot95, 1.095);
 
   // Fouls
-  const foulExp = clampNum(20.5 + pressCards * 2.2 + (isDerby ? 3.2 : 0) + (refStyle === 'strict' ? 1.5 : -0.5) + (badPitch ? 1.2 : 0), 15.0, 29.0);
+  const foulExp = clampNum(21.4 + pressCards * 2.2 + (isDerby ? 3.2 : 0) + (refStyle === 'strict' ? 1.5 : -0.5) + (badPitch ? 1.2 : 0), 15.5, 29.5);
   const pFouls215 = 1 - poissonCDF(21, foulExp);
-  const [oddFoO215, oddFoU215] = pairOddsFromProbs(pFouls215, 1 - pFouls215, 1.065);
+  const [oddFoO215, oddFoU215] = pairOddsFromProbs(pFouls215, 1 - pFouls215, 1.095);
 
   // Events (Penalty, Red Card, Goal 75+)
-  const pPen = clampNum(0.22 + (totalLambda - 2.35) * 0.04 + (isDerby ? 0.04 : 0) + (refStyle === 'strict' ? 0.04 : 0), 0.16, 0.36);
+  const pPen = clampNum(0.22 + (totalLambda - 2.55) * 0.04 + (isDerby ? 0.04 : 0) + (refStyle === 'strict' ? 0.04 : 0), 0.16, 0.36);
   const pRed = clampNum(0.13 + (isDerby ? 0.06 : 0) + (refStyle === 'strict' ? 0.04 : 0) + pressCards * 0.03, 0.10, 0.28);
-  const pLate75 = clampNum(1 - Math.exp(-0.23 * totalLambda), 0.32, 0.56);
-  const [oddPenY, oddPenN] = pairOddsFromProbs(pPen, 1 - pPen, 1.07);
-  const [oddRedY, oddRedN] = pairOddsFromProbs(pRed, 1 - pRed, 1.075);
-  const [oddLateY, oddLateN] = pairOddsFromProbs(pLate75, 1 - pLate75, 1.065);
+  const pLate75 = clampNum(1 - Math.exp(-0.24 * totalLambda), 0.34, 0.58);
+  const [oddPenY, oddPenN] = pairOddsFromProbs(pPen, 1 - pPen, 1.09);
+  const [oddRedY, oddRedN] = pairOddsFromProbs(pRed, 1 - pRed, 1.09);
+  const [oddLateY, oddLateN] = pairOddsFromProbs(pLate75, 1 - pLate75, 1.095);
 
   const calcExactOdd = (eh: number, ea: number) => {
     const h = clampNum(Math.round(eh), 0, 15);
@@ -1459,6 +1478,7 @@ function ensureSponsorState(db: any, teamId: string) {
       views: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
       approved: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
       declined: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
+      lastAdAt: {},
       earnedEur: 0,
       rfsClaimed: false,
       rfsExtraViews: 0,
@@ -1472,6 +1492,7 @@ function ensureSponsorState(db: any, teamId: string) {
     st.views = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
     st.approved = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
     st.declined = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+    st.lastAdAt = {};
     st.earnedEur = 0;
     st.rfsClaimed = false;
     st.rfsExtraViews = 0;
@@ -1480,6 +1501,7 @@ function ensureSponsorState(db: any, teamId: string) {
   st.views ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
   st.approved ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
   st.declined ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+  st.lastAdAt ||= {};
   if (st.views.tg_bot_sponsor === undefined) st.views.tg_bot_sponsor = 0;
   if (st.approved.tg_bot_sponsor === undefined) st.approved.tg_bot_sponsor = 0;
   if (st.declined.tg_bot_sponsor === undefined) st.declined.tg_bot_sponsor = 0;
@@ -1498,11 +1520,13 @@ export function buildSponsorSummary(ctx: AdServerContext, teamId: string) {
   const resetAt = st.cycleStartedAt > 0 ? st.cycleStartedAt + CYCLE_MS : null;
   const remainingMs = resetAt ? Math.max(0, resetAt - now) : 0;
   const rfsUnlocked = rawTotalViews >= RFS_REQUIRED_VIEWS;
+  const rfsCooldownLeft = getCooldownLeftMs(st.lastAdAt.rfs);
 
   return {
     cycleStartedAt: st.cycleStartedAt || null,
     resetAt,
     remainingMs,
+    cooldownMs: AD_COOLDOWN_MS,
     totalViews,
     rawTotalViews,
     totalRequired,
@@ -1512,16 +1536,23 @@ export function buildSponsorSummary(ctx: AdServerContext, teamId: string) {
     rfsMaxViews: 30,
     rfsRewardPerAd: 1000,
     rfsEarnedEur: Number(st.rfsEarnedEur || 0),
+    rfsCooldownRemainingMs: rfsCooldownLeft,
+    rfsNextAvailableAt: rfsCooldownLeft > 0 ? now + rfsCooldownLeft : null,
     earnedEurCycle: Number(st.earnedEur || 0),
     rfsBlockId: blocks.rfs_bonus,
-    sponsors: SPONSORS.map((s) => ({
-      ...s,
-      blockId: blocks[s.blockKey],
-      views: Math.min(s.maxViews, Number(st.views[s.id] || 0)),
-      approvedCount: Number(st.approved[s.id] || 0),
-      declinedCount: Number(st.declined[s.id] || 0),
-      remaining: Math.max(0, s.maxViews - Number(st.views[s.id] || 0)),
-    })),
+    sponsors: SPONSORS.map((s) => {
+      const cdLeft = getCooldownLeftMs(st.lastAdAt[s.id]);
+      return {
+        ...s,
+        blockId: blocks[s.blockKey],
+        views: Math.min(s.maxViews, Number(st.views[s.id] || 0)),
+        approvedCount: Number(st.approved[s.id] || 0),
+        declinedCount: Number(st.declined[s.id] || 0),
+        remaining: Math.max(0, s.maxViews - Number(st.views[s.id] || 0)),
+        cooldownRemainingMs: cdLeft,
+        nextAvailableAt: cdLeft > 0 ? now + cdLeft : null,
+      };
+    }),
     history: (st.history || []).slice(0, 15),
   };
 }
@@ -1740,14 +1771,17 @@ export function ensureWallet(db: any, actorKey: string) {
       totalEarnedCoins: STARTER_COINS,
       cycleStartedAt: 0,
       adCounts: { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 },
+      lastAdAt: {},
     };
     db.predictionWallets[actorKey] = w;
   }
   if (w.cycleStartedAt > 0 && now - w.cycleStartedAt >= CYCLE_MS) {
     w.cycleStartedAt = 0;
     w.adCounts = { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 };
+    w.lastAdAt = {};
   }
   w.adCounts ||= { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 };
+  w.lastAdAt ||= {};
   if (w.adCounts.bot_coins === undefined) w.adCounts.bot_coins = 0;
   return w;
 }
@@ -2427,11 +2461,20 @@ function executeSponsorCredit(
   if (currentViews >= sp.maxViews) {
     return {
       ok: false,
-      error: `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`,
+      error: `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`,
     };
   }
-  if (!st.cycleStartedAt) st.cycleStartedAt = Date.now();
+  const cdLeft = getCooldownLeftMs(st.lastAdAt[sp.id]);
+  if (cdLeft > 0) {
+    return {
+      ok: false,
+      error: `Перерыв между рекламами у спонсора «${sp.name}»: подождите ещё ${fmtCooldownWords(cdLeft)}.`,
+    };
+  }
+  const now = Date.now();
+  if (!st.cycleStartedAt) st.cycleStartedAt = now;
   st.views[sp.id] = currentViews + 1;
+  st.lastAdAt[sp.id] = now;
 
   const approved = Math.random() < sp.approvalRate;
   const t = ctx.team(teamId);
@@ -2493,24 +2536,34 @@ function executeCoinsCredit(
   if (!reward) return { ok: false, error: 'Неверный тип рекламы для получения монет' };
 
   const wallet = ensureWallet(db, actorKey);
+  const maxViews = getCoinOfferMaxViews(blockKey);
   const cur = Number(wallet.adCounts[blockKey] || 0);
-  if (cur >= PREDICTION_AD_MAX_PER_CYCLE) {
+  if (cur >= maxViews) {
     return {
       ok: false,
-      error: `Достигнут лимит рекламного блока (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты). Выберите другой формат или дождитесь сброса.`,
+      error: `Достигнут лимит рекламного блока (${maxViews}/${maxViews} за 24 часа). Выберите другой формат или дождитесь сброса.`,
     };
   }
-  if (!wallet.cycleStartedAt) wallet.cycleStartedAt = Date.now();
+  const cdLeft = getCooldownLeftMs(wallet.lastAdAt[blockKey]);
+  if (cdLeft > 0) {
+    return {
+      ok: false,
+      error: `Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`,
+    };
+  }
+  const now = Date.now();
+  if (!wallet.cycleStartedAt) wallet.cycleStartedAt = now;
   wallet.adCounts[blockKey] = cur + 1;
-  wallet.coins = Number(wallet.coins || 0) + reward;
-  wallet.totalEarnedCoins = Number(wallet.totalEarnedCoins || 0) + reward;
+  wallet.lastAdAt[blockKey] = now;
+  wallet.coins = roundCoins(Number(wallet.coins || 0) + reward);
+  wallet.totalEarnedCoins = roundCoins(Number(wallet.totalEarnedCoins || 0) + reward);
   ctx.save();
 
   return {
     ok: true,
     coinsAdded: reward,
     coins: wallet.coins,
-    message: `Начислено +${reward} ${reward === 1 ? 'монета' : 'монеты'} за ${blockKey === 'bot_coins' ? 'рекламу в Telegram-боте' : 'просмотр рекламы'}!`,
+    message: `Начислено +${reward} ${reward === 1 ? 'монета' : 'монеты'} за ${blockKey === 'bot_coins' ? 'рекламу «Прямой репортаж» в боте' : 'просмотр рекламы'}!`,
   };
 }
 
@@ -2707,6 +2760,38 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const def = ADSGRAM_BLOCKS.find((b) => b.key === blockKey);
     if (!def) return ctx.fail(res, 'Неизвестный рекламный блок Adsgram');
     const actor = resolveActor(req);
+    const db = ctx.getDb();
+
+    if (blockKey === 'coins_short' || blockKey === 'coins_banner' || blockKey === 'coins_long') {
+      const wallet = ensureWallet(db, actor.actorKey);
+      const maxViews = getCoinOfferMaxViews(blockKey);
+      if (Number(wallet.adCounts[blockKey] || 0) >= maxViews) {
+        return ctx.fail(res, `Достигнут лимит блока (${maxViews}/${maxViews} за 24 часа).`);
+      }
+      const cdLeft = getCooldownLeftMs(wallet.lastAdAt[blockKey]);
+      if (cdLeft > 0) {
+        return ctx.fail(res, `Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
+      }
+    } else if ((blockKey === 'sponsor_long' || blockKey === 'sponsor_short' || blockKey === 'sponsor_banner') && actor.teamId) {
+      const sp = SPONSORS.find((x) => x.blockKey === blockKey);
+      if (sp) {
+        const st = ensureSponsorState(db, actor.teamId);
+        if (Number(st.views[sp.id] || 0) >= sp.maxViews) {
+          return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+        }
+        const cdLeft = getCooldownLeftMs(st.lastAdAt[sp.id]);
+        if (cdLeft > 0) {
+          return ctx.fail(res, `Перерыв между рекламами у спонсора «${sp.name}»: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
+        }
+      }
+    } else if (blockKey === 'rfs_bonus' && actor.teamId) {
+      const st = ensureSponsorState(db, actor.teamId);
+      const cdLeft = getCooldownLeftMs(st.lastAdAt.rfs);
+      if (cdLeft > 0) {
+        return ctx.fail(res, `Перерыв между рекламами РФС: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
+      }
+    }
+
     const token = 'ad_' + crypto.randomBytes(14).toString('hex');
     adSessions.set(token, {
       token,
@@ -2718,7 +2803,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       verified: false,
       consumed: false,
     });
-    const blocks = getAdsgramBlocks(ctx.getDb());
+    const blocks = getAdsgramBlocks(db);
     res.json({
       ok: 1,
       sessionToken: token,
@@ -2758,12 +2843,21 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       const st = ensureSponsorState(db, actor.teamId);
       const sp = SPONSORS.find((x) => x.blockKey === 'bot_sponsor')!;
       if (Number(st.views[sp.id] || 0) >= sp.maxViews) {
-        return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`);
+        return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+      }
+      const cdLeft = getCooldownLeftMs(st.lastAdAt[sp.id]);
+      if (cdLeft > 0) {
+        return ctx.fail(res, `Перерыв между рекламами у спонсора «${sp.name}»: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
       }
     } else {
       const wallet = ensureWallet(db, actor.actorKey);
-      if (Number(wallet.adCounts.bot_coins || 0) >= PREDICTION_AD_MAX_PER_CYCLE) {
-        return ctx.fail(res, `Достигнут лимит бот-рекламы для прогнозов (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты).`);
+      const maxViews = getCoinOfferMaxViews('bot_coins');
+      if (Number(wallet.adCounts.bot_coins || 0) >= maxViews) {
+        return ctx.fail(res, `Достигнут лимит рекламы «Прямой репортаж» (${maxViews}/${maxViews} за 24 часа).`);
+      }
+      const cdLeft = getCooldownLeftMs(wallet.lastAdAt.bot_coins);
+      if (cdLeft > 0) {
+        return ctx.fail(res, `Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
       }
     }
 
@@ -2988,7 +3082,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         if (siteUrl && siteUrl.startsWith('https://')) {
           rows.push([{ text: '⚽ Открыть Вирт РПЛ', web_app: { url: siteUrl } }]);
         }
-        rows.push([{ text: '🪙 Реклама для Прогнозов (+2 мон.)', callback_data: 'ads_bot:bot_coins' }]);
+        rows.push([{ text: '⚽ Прямой репортаж для Прогнозов (+2 мон.)', callback_data: 'ads_bot:bot_coins' }]);
         rows.push([{ text: '💼 Спонсор МегаФон (+€500)', callback_data: 'ads_bot:bot_sponsor' }]);
         await sendBotReply(
           `🏟 <b>Вирт РПЛ — Меню бота</b>\n\nЗдесь вы можете получить рекламные посты партнёров для пополнения монет в Прогнозах или бюджета вашего клуба.`,
@@ -3017,14 +3111,25 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
           const actorKey = linkedTid ? `club:${linkedTid}` : `user:${tgKey}`;
           if (blockKey === 'bot_coins') {
             const w = ensureWallet(db, actorKey);
-            if (Number(w.adCounts.bot_coins || 0) >= PREDICTION_AD_MAX_PER_CYCLE) {
-              await answerCb(`Лимит (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE}) исчерпан. Сброс через 2 мин.`, true);
+            const maxViews = getCoinOfferMaxViews('bot_coins');
+            if (Number(w.adCounts.bot_coins || 0) >= maxViews) {
+              await answerCb(`Лимит (${maxViews}/${maxViews}) исчерпан. Общий сброс раз в 24 часа.`, true);
+              return;
+            }
+            const cdLeft = getCooldownLeftMs(w.lastAdAt.bot_coins);
+            if (cdLeft > 0) {
+              await answerCb(`Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`, true);
               return;
             }
           } else if (linkedTid) {
             const st = ensureSponsorState(db, linkedTid);
             if (Number(st.views.tg_bot_sponsor || 0) >= 5) {
-              await answerCb('Лимит спонсора (5/5) исчерпан. Сброс через 2 мин.', true);
+              await answerCb('Лимит спонсора (5/5) исчерпан. Общий сброс раз в 24 часа.', true);
+              return;
+            }
+            const cdLeft = getCooldownLeftMs(st.lastAdAt.tg_bot_sponsor);
+            if (cdLeft > 0) {
+              await answerCb(`Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`, true);
               return;
             }
           }
@@ -3110,7 +3215,11 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const st = ensureSponsorState(db, req.tid);
     const currentViews = Number(st.views[sp.id] || 0);
     if (currentViews >= sp.maxViews) {
-      return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 2-минутном цикле.`);
+      return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+    }
+    const spCdLeft = getCooldownLeftMs(st.lastAdAt[sp.id]);
+    if (spCdLeft > 0) {
+      return ctx.fail(res, `Перерыв между рекламами у спонсора «${sp.name}»: подождите ещё ${fmtCooldownWords(spCdLeft)}.`);
     }
     const v = verifyAndConsumeAdProof(req.body?.adProof, sp.blockKey, actor.actorKey, sp.blockKey === 'bot_sponsor');
     if (!v.ok) return ctx.fail(res, v.error);
@@ -3129,7 +3238,11 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       return ctx.fail(res, `Сначала нужно просмотреть все ${RFS_REQUIRED_VIEWS} реклам у спонсоров (сейчас ${totalViews}/${RFS_REQUIRED_VIEWS}).`);
     }
     if (Number(st.rfsExtraViews || 0) >= 30) {
-      return ctx.fail(res, 'Достигнут лимит блока Adsgram для бонуса РФС (30/30). Дождитесь сброса 2-минутного таймера.');
+      return ctx.fail(res, 'Достигнут лимит блока Adsgram для бонуса РФС (30/30). Дождитесь 24-часового сброса.');
+    }
+    const rfsCdLeft = getCooldownLeftMs(st.lastAdAt.rfs);
+    if (rfsCdLeft > 0) {
+      return ctx.fail(res, `Перерыв между рекламами РФС: подождите ещё ${fmtCooldownWords(rfsCdLeft)}.`);
     }
     const v = verifyAndConsumeAdProof(req.body?.adProof, 'rfs_bonus', actor.actorKey, false);
     if (!v.ok) return ctx.fail(res, v.error);
@@ -3141,6 +3254,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     st.rfsClaimed = true;
     st.rfsExtraViews = Number(st.rfsExtraViews || 0) + 1;
     st.rfsEarnedEur = Number(st.rfsEarnedEur || 0) + reward;
+    st.lastAdAt.rfs = Date.now();
     const nowIso = new Date().toISOString();
 
     if (t) {
@@ -3442,6 +3556,13 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       };
     });
 
+    const now = Date.now();
+    const offerMeta = [
+      { blockKey: 'coins_short', blockId: blocks.coins_short, label: 'Быстрый пас', durationHint: '5 сек', rewardCoins: 1, maxViews: PREDICTION_AD_MAX_PER_CYCLE, isBotAd: false },
+      { blockKey: 'coins_banner', blockId: blocks.coins_banner, label: 'Щит у поля', durationHint: 'баннер', rewardCoins: 2, maxViews: PREDICTION_AD_MAX_PER_CYCLE, isBotAd: false },
+      { blockKey: 'coins_long', blockId: blocks.coins_long, label: 'Перерыв матча', durationHint: '30 сек', rewardCoins: 3, maxViews: PREDICTION_AD_MAX_PER_CYCLE, isBotAd: false },
+      { blockKey: 'bot_coins', blockId: blocks.bot_coins, label: 'Прямой репортаж', durationHint: 'бот · переход', rewardCoins: 2, maxViews: PREDICTION_BOT_AD_MAX_PER_CYCLE, isBotAd: true },
+    ];
     res.json({
       season,
       actorKey: actor.actorKey,
@@ -3452,13 +3573,17 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         totalEarnedCoins: roundCoins(Number(wallet.totalEarnedCoins || 0)),
         adCounts: wallet.adCounts,
         resetAt: wallet.cycleStartedAt ? wallet.cycleStartedAt + CYCLE_MS : null,
+        cooldownMs: AD_COOLDOWN_MS,
       },
-      coinOffers: [
-        { blockKey: 'coins_short', blockId: blocks.coins_short, label: 'Короткая реклама', durationHint: '5 сек', rewardCoins: 1, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_short || 0) },
-        { blockKey: 'coins_banner', blockId: blocks.coins_banner, label: 'Баннерная реклама', durationHint: 'баннер', rewardCoins: 2, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_banner || 0) },
-        { blockKey: 'coins_long', blockId: blocks.coins_long, label: 'Длинная реклама', durationHint: '30 сек', rewardCoins: 3, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.coins_long || 0) },
-        { blockKey: 'bot_coins', blockId: blocks.bot_coins, label: 'Пост в боте', durationHint: 'бот · переход', rewardCoins: 2, maxViews: PREDICTION_AD_MAX_PER_CYCLE, views: Number(wallet.adCounts.bot_coins || 0), isBotAd: true },
-      ],
+      coinOffers: offerMeta.map((om) => {
+        const cdLeft = getCooldownLeftMs(wallet.lastAdAt[om.blockKey]);
+        return {
+          ...om,
+          views: Number(wallet.adCounts[om.blockKey] || 0),
+          cooldownRemainingMs: cdLeft,
+          nextAvailableAt: cdLeft > 0 ? now + cdLeft : null,
+        };
+      }),
       markets: PREDICTION_MARKETS,
       fixtures: openFixtures,
       myPredictions,
@@ -3479,9 +3604,14 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
 
     const actor = resolveActor(req);
     const wallet = ensureWallet(db, actor.actorKey);
+    const maxViews = getCoinOfferMaxViews(blockKey);
     const cur = Number(wallet.adCounts[blockKey] || 0);
-    if (cur >= PREDICTION_AD_MAX_PER_CYCLE) {
-      return ctx.fail(res, `Достигнут лимит рекламного блока (${PREDICTION_AD_MAX_PER_CYCLE}/${PREDICTION_AD_MAX_PER_CYCLE} за 2 минуты). Выберите другой формат или дождитесь сброса.`);
+    if (cur >= maxViews) {
+      return ctx.fail(res, `Достигнут лимит рекламного блока (${maxViews}/${maxViews} за 24 часа). Выберите другой формат или дождитесь сброса.`);
+    }
+    const cdLeft = getCooldownLeftMs(wallet.lastAdAt[blockKey]);
+    if (cdLeft > 0) {
+      return ctx.fail(res, `Перерыв между рекламами: подождите ещё ${fmtCooldownWords(cdLeft)}.`);
     }
 
     const v = verifyAndConsumeAdProof(req.body?.adProof, blockKey, actor.actorKey, blockKey === 'bot_coins');
