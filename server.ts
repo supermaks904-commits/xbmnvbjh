@@ -16735,6 +16735,23 @@ app.post("/api/club/tactics/clear-speech", needClub, (req, res) => {
   save();
   res.json({ ok: 1 });
 });
+app.post("/api/club/tactics/clear-training", needClub, (req, res) => {
+  const now = Date.now();
+  if (db.tactics[req.tid]) {
+    db.tactics[req.tid].training = "";
+    db.tactics[req.tid].at = now;
+  }
+  const f = req.body?.fid ? fx(req.body.fid) : null;
+  if (f && (f.home === req.tid || f.away === req.tid) && f.status === "scheduled") {
+    const k = f.id + ":" + req.tid;
+    if (db.lineups[k]) {
+      db.lineups[k].training = "";
+      db.lineups[k].at = now;
+    }
+  }
+  save();
+  res.json({ ok: 1 });
+});
 app.post("/api/club/tactics/preview", needClub, (req, res) => {
   const isAdmin = req.me?.role === "admin";
   const coach = getCoachForTeam(req.tid);

@@ -8118,7 +8118,7 @@ function lineupForm(box, f, c, withT, app) {
   <div id="subs_editor" style="margin:14px 0;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:10px"></div>
   <div id="roles_editor" style="margin:14px 0;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:10px"></div>
   <div class="row" style="justify-content:space-between;align-items:flex-end;gap:8px;margin-top:10px;margin-bottom:4px"><label style="margin:0">Тактика — всё, что тренер говорит игрокам перед матчем</label><button type="button" class="btn sm alt clear-speech-btn">Очистить</button></div><textarea class="sp1" placeholder="Пишите как есть: установка, настрой, речь. Молчание — тоже речь.">${e(L.speech || '')}</textarea>
-  <label>Тренировочный план перед матчем (произвольный текст)</label><textarea class="tr1" placeholder="Например: пн — отдых, вт — прессинг 2 часа, ср — стандарты, чт — разминка, пт — отдых">${e(L.training || '')}</textarea>
+  <div class="row" style="justify-content:space-between;align-items:flex-end;gap:8px;margin-top:10px;margin-bottom:4px"><label style="margin:0">Тренировочный план перед матчем (произвольный текст)</label><button type="button" class="btn sm alt clear-training-btn">Очистить</button></div><textarea class="tr1" placeholder="Например: пн — отдых, вт — прессинг 2 часа, ср — стандарты, чт — разминка, пт — отдых">${e(L.training || '')}</textarea>
   <div id="tactical_preview_widget" style="margin:14px 0;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:10px;font-size:12.5px;line-height:1.45">
     <div class="muted small">${isAdmin ? '⏳ Анализ состава, позиций и усталости…' : '⏳ Анализ состава и позиций…'}</div>
   </div>
@@ -8569,7 +8569,29 @@ function lineupForm(box, f, c, withT, app) {
       if (!r) syncClearSpeechBtn();
     };
   }
-  box.querySelector('.tr1')?.addEventListener('input', schedulePreview);
+  const trEl = box.querySelector('.tr1');
+  const clearTrainingBtn = box.querySelector('.clear-training-btn');
+  const syncClearTrainingBtn = () => {
+    if (!clearTrainingBtn || !trEl) return;
+    clearTrainingBtn.disabled = !trEl.value.length;
+  };
+  syncClearTrainingBtn();
+  trEl?.addEventListener('input', () => {
+    syncClearTrainingBtn();
+    schedulePreview();
+  });
+  if (clearTrainingBtn && trEl) {
+    clearTrainingBtn.onclick = async () => {
+      if (!trEl.value.length) return;
+      clearTrainingBtn.disabled = true;
+      trEl.value = '';
+      if (c.tactic) c.tactic.training = '';
+      if (f.lineup) f.lineup.training = '';
+      schedulePreview();
+      const r = await act(() => api('/club/tactics/clear-training', withT({ fid: f.id })), 'Тренировочный план очищен');
+      if (!r) syncClearTrainingBtn();
+    };
+  }
   box.querySelector('.fm')?.addEventListener('input', schedulePreview);
   box.addEventListener('change', schedulePreview);
 
