@@ -5,7 +5,7 @@ export interface AdsgramBlockDef {
   key: string;
   label: string;
   category: 'sponsors' | 'friendly' | 'predictions' | 'national' | 'interview';
-  format: 'long' | 'short' | 'banner' | 'click_long';
+  format: 'long' | 'short' | 'banner' | 'click_long' | 'bot';
   durationSec: number;
   requiresClick: boolean;
   defaultBlockId: string;
@@ -153,6 +153,26 @@ export const ADSGRAM_BLOCKS: AdsgramBlockDef[] = [
     defaultBlockId: 'int-interview-ask',
     maxPerCycle: 50,
   },
+  {
+    key: 'bot_sponsor',
+    label: 'Спонсор 4 (Telegram-бот Adsgram) — Пост в боте (€600)',
+    category: 'sponsors',
+    format: 'bot',
+    durationSec: 10,
+    requiresClick: true,
+    defaultBlockId: 'bot-sponsor',
+    maxPerCycle: 10,
+  },
+  {
+    key: 'bot_coins',
+    label: 'Прогнозы (Telegram-бот Adsgram) — Пост в боте (+2 монеты)',
+    category: 'predictions',
+    format: 'bot',
+    durationSec: 10,
+    requiresClick: true,
+    defaultBlockId: 'bot-coins',
+    maxPerCycle: 30,
+  },
 ];
 
 export interface SponsorConfig {
@@ -160,12 +180,13 @@ export interface SponsorConfig {
   name: string;
   tagline: string;
   description: string;
-  blockKey: 'sponsor_long' | 'sponsor_short' | 'sponsor_banner';
+  blockKey: 'sponsor_long' | 'sponsor_short' | 'sponsor_banner' | 'bot_sponsor';
   formatLabel: string;
   rewardEur: number;
   maxViews: number;
   approvalRate: number;
   accentColor: string;
+  isBotAd?: boolean;
 }
 
 export const SPONSORS: SponsorConfig[] = [
@@ -191,7 +212,7 @@ export const SPONSORS: SponsorConfig[] = [
     rewardEur: 500,
     maxViews: 10,
     approvalRate: 0.95,
-  accentColor: '#ca8a04',
+    accentColor: '#ca8a04',
   },
   {
     id: 'aeroflot',
@@ -205,11 +226,25 @@ export const SPONSORS: SponsorConfig[] = [
     approvalRate: 0.95,
     accentColor: '#1d4ed8',
   },
+  {
+    id: 'tg_bot_sponsor',
+    name: 'Telegram-бот Adsgram',
+    tagline: 'Рекламный пост в личку бота',
+    description: 'Бот отправит рекламное сообщение в Telegram. Перейдите по ссылке в посте, чтобы получить спонсорскую выплату.',
+    blockKey: 'bot_sponsor',
+    formatLabel: 'Пост в боте (переход)',
+    rewardEur: 600,
+    maxViews: 10,
+    approvalRate: 0.95,
+    accentColor: '#0f766e',
+    isBotAd: true,
+  },
 ];
 
 const CYCLE_MS = 24 * 60 * 60 * 1000;
 const FRIENDLY_BREAK_LIMIT = 9;
 const STARTER_COINS = 5;
+const RFS_REQUIRED_VIEWS = 30;
 
 const SEASON_PRIZES = [
   {
@@ -258,6 +293,9 @@ export interface AdServerContext {
   ensureNationalTeam: () => any;
   ensureInitialBudgets: () => void;
   compName: (id: string) => string;
+  getTgBotToken?: () => string;
+  getAdsgramBotToken?: () => string;
+  getSiteUrl?: () => string;
 }
 
 export interface PredictionMarketOption {
@@ -683,9 +721,9 @@ function ensureSponsorState(db: any, teamId: string) {
   if (!st || typeof st !== 'object') {
     st = {
       cycleStartedAt: 0,
-      views: { gazprom_neft: 0, tbank: 0, aeroflot: 0 },
-      approved: { gazprom_neft: 0, tbank: 0, aeroflot: 0 },
-      declined: { gazprom_neft: 0, tbank: 0, aeroflot: 0 },
+      views: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
+      approved: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
+      declined: { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 },
       earnedEur: 0,
       rfsClaimed: false,
       rfsExtraViews: 0,
@@ -696,17 +734,20 @@ function ensureSponsorState(db: any, teamId: string) {
   }
   if (st.cycleStartedAt > 0 && now - st.cycleStartedAt >= CYCLE_MS) {
     st.cycleStartedAt = 0;
-    st.views = { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
-    st.approved = { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
-    st.declined = { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
+    st.views = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+    st.approved = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+    st.declined = { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
     st.earnedEur = 0;
     st.rfsClaimed = false;
     st.rfsExtraViews = 0;
     st.rfsEarnedEur = 0;
   }
-  st.views ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
-  st.approved ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
-  st.declined ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0 };
+  st.views ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+  st.approved ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+  st.declined ||= { gazprom_neft: 0, tbank: 0, aeroflot: 0, tg_bot_sponsor: 0 };
+  if (st.views.tg_bot_sponsor === undefined) st.views.tg_bot_sponsor = 0;
+  if (st.approved.tg_bot_sponsor === undefined) st.approved.tg_bot_sponsor = 0;
+  if (st.declined.tg_bot_sponsor === undefined) st.declined.tg_bot_sponsor = 0;
   st.history ||= [];
   return st;
 }
@@ -716,17 +757,19 @@ export function buildSponsorSummary(ctx: AdServerContext, teamId: string) {
   const st = ensureSponsorState(db, teamId);
   const blocks = getAdsgramBlocks(db);
   const now = Date.now();
-  const totalViews = SPONSORS.reduce((acc, s) => acc + Math.min(s.maxViews, Number(st.views[s.id] || 0)), 0);
-  const totalRequired = SPONSORS.reduce((acc, s) => acc + s.maxViews, 0);
+  const rawTotalViews = SPONSORS.reduce((acc, s) => acc + Math.min(s.maxViews, Number(st.views[s.id] || 0)), 0);
+  const totalViews = Math.min(RFS_REQUIRED_VIEWS, rawTotalViews);
+  const totalRequired = RFS_REQUIRED_VIEWS;
   const resetAt = st.cycleStartedAt > 0 ? st.cycleStartedAt + CYCLE_MS : null;
   const remainingMs = resetAt ? Math.max(0, resetAt - now) : 0;
-  const rfsUnlocked = totalViews >= totalRequired;
+  const rfsUnlocked = rawTotalViews >= RFS_REQUIRED_VIEWS;
 
   return {
     cycleStartedAt: st.cycleStartedAt || null,
     resetAt,
     remainingMs,
     totalViews,
+    rawTotalViews,
     totalRequired,
     rfsUnlocked,
     rfsClaimed: !!st.rfsClaimed,
@@ -752,7 +795,8 @@ export function verifyAndParseTelegramAuth(
   db: any,
   initData: string | undefined,
   fallbackUser: any,
-  headers?: any
+  headers?: any,
+  botTokenOverride?: string
 ): {
   ok: boolean;
   verified: boolean;
@@ -761,7 +805,14 @@ export function verifyAndParseTelegramAuth(
   username: string;
   photoUrl: string;
 } | null {
-  const botToken = String(process.env.TG_BOT_TOKEN || db?.settings?.tgToken || '').trim();
+  const botToken = String(
+    botTokenOverride ||
+    process.env.TELEGRAM_BOT_TOKEN ||
+    process.env.TG_BOT_TOKEN ||
+    process.env.TG_TOKEN ||
+    db?.settings?.tgToken ||
+    ''
+  ).trim();
   let parsedUser: any = null;
   let verified = false;
 
@@ -833,7 +884,7 @@ export function extractTgHintsFromReq(ctx: AdServerContext, req: any): {
   photo?: string;
 } {
   const db = ctx.getDb();
-  const tgParsed = verifyAndParseTelegramAuth(db, req.body?.tgInitData, req.body?.tgUser, req.headers);
+  const tgParsed = verifyAndParseTelegramAuth(db, req.body?.tgInitData, req.body?.tgUser, req.headers, ctx.getTgBotToken?.());
   if (tgParsed) {
     return {
       tgId: tgParsed.tgId,
@@ -953,15 +1004,16 @@ export function ensureWallet(db: any, actorKey: string) {
       coins: STARTER_COINS,
       totalEarnedCoins: STARTER_COINS,
       cycleStartedAt: 0,
-      adCounts: { coins_short: 0, coins_banner: 0, coins_long: 0 },
+      adCounts: { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 },
     };
     db.predictionWallets[actorKey] = w;
   }
   if (w.cycleStartedAt > 0 && now - w.cycleStartedAt >= CYCLE_MS) {
     w.cycleStartedAt = 0;
-    w.adCounts = { coins_short: 0, coins_banner: 0, coins_long: 0 };
+    w.adCounts = { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 };
   }
-  w.adCounts ||= { coins_short: 0, coins_banner: 0, coins_long: 0 };
+  w.adCounts ||= { coins_short: 0, coins_banner: 0, coins_long: 0, bot_coins: 0 };
+  if (w.adCounts.bot_coins === undefined) w.adCounts.bot_coins = 0;
   return w;
 }
 
@@ -1418,15 +1470,334 @@ export function buildNationalProposalAiLines(ntCurrent: any): {
   return { votesMap, notesByPid, aiInstructionSuffix };
 }
 
+interface PendingBotAdSession {
+  token: string;
+  blockKey: 'bot_sponsor' | 'bot_coins';
+  actorKey: string;
+  teamId: string | null;
+  tgId: string;
+  source: 'webapp' | 'telegram_bot';
+  mode: 'bot_sent' | 'preview';
+  createdAt: number;
+  expiresAt: number;
+  rewardConfirmed: boolean;
+  verified: boolean;
+  consumed: boolean;
+  creditResult?: any;
+}
+
+let cachedBotUsername: { tail: string; username: string; at: number } | null = null;
+
+async function resolveTelegramBotUsername(botToken: string): Promise<string> {
+  if (!botToken) return '';
+  const tail = botToken.slice(-8);
+  const now = Date.now();
+  if (cachedBotUsername && cachedBotUsername.tail === tail && now - cachedBotUsername.at < 10 * 60 * 1000) {
+    return cachedBotUsername.username;
+  }
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+    const j: any = await r.json().catch(() => ({}));
+    const un = String(j?.result?.username || '').trim();
+    if (un) {
+      cachedBotUsername = { tail, username: un, at: now };
+      return un;
+    }
+  } catch {}
+  return cachedBotUsername?.tail === tail ? cachedBotUsername.username : '';
+}
+
+function getBotAdSessionsStore(db: any): PendingBotAdSession[] {
+  db.botAdSessions ||= [];
+  const now = Date.now();
+  db.botAdSessions = db.botAdSessions.filter(
+    (s: any) => s && typeof s === 'object' && Number(s.expiresAt || 0) > now - 30 * 60 * 1000
+  ).slice(-200);
+  return db.botAdSessions;
+}
+
+function executeSponsorCredit(
+  ctx: AdServerContext,
+  teamId: string,
+  sp: SponsorConfig
+): { ok: true; approved: boolean; amount: number; newBudget: number; message: string; summary: any } | { ok: false; error: string } {
+  const db = ctx.getDb();
+  const st = ensureSponsorState(db, teamId);
+  const currentViews = Number(st.views[sp.id] || 0);
+  if (currentViews >= sp.maxViews) {
+    return {
+      ok: false,
+      error: `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`,
+    };
+  }
+  if (!st.cycleStartedAt) st.cycleStartedAt = Date.now();
+  st.views[sp.id] = currentViews + 1;
+
+  const approved = Math.random() < sp.approvalRate;
+  const t = ctx.team(teamId);
+  ctx.ensureInitialBudgets();
+  const nowIso = new Date().toISOString();
+
+  if (approved) {
+    st.approved[sp.id] = Number(st.approved[sp.id] || 0) + 1;
+    st.earnedEur = Number(st.earnedEur || 0) + sp.rewardEur;
+    if (t) {
+      t.budget = Number(t.budget || 0) + sp.rewardEur;
+      db.budgetHistory ||= [];
+      db.budgetHistory.push({
+        id: 'bh_' + ctx.uid(),
+        teamId: t.id,
+        amount: sp.rewardEur,
+        type: 'sponsor_ad',
+        typeLabel: `Спонсор: ${sp.name}`,
+        description: `${sp.name} (${sp.formatLabel}): +€${sp.rewardEur.toLocaleString('ru-RU')}`,
+        date: nowIso,
+      });
+    }
+  } else {
+    st.declined[sp.id] = Number(st.declined[sp.id] || 0) + 1;
+  }
+
+  st.history.unshift({
+    id: 'sph_' + ctx.uid(),
+    sponsorId: sp.id,
+    sponsorName: sp.name,
+    approved,
+    amount: approved ? sp.rewardEur : 0,
+    date: nowIso,
+  });
+  st.history = st.history.slice(0, 30);
+
+  ctx.save();
+  const summary = buildSponsorSummary(ctx, teamId);
+  return {
+    ok: true,
+    approved,
+    amount: approved ? sp.rewardEur : 0,
+    newBudget: t?.budget || 0,
+    message: approved
+      ? `Спонсор «${sp.name}» одобрил заявку! Начислено +€${sp.rewardEur.toLocaleString('ru-RU')}.`
+      : `Спонсор «${sp.name}» отклонил запрос на финансирование (шанс отказа 5%), но просмотр засчитан в прогресс к бонусу РФС!`,
+    summary,
+  };
+}
+
+function executeCoinsCredit(
+  ctx: AdServerContext,
+  actorKey: string,
+  blockKey: 'coins_short' | 'coins_banner' | 'coins_long' | 'bot_coins'
+): { ok: true; coinsAdded: number; coins: number; message: string } | { ok: false; error: string } {
+  const db = ctx.getDb();
+  const rewardMap: Record<string, number> = { coins_short: 1, coins_banner: 2, coins_long: 3, bot_coins: 2 };
+  const reward = rewardMap[blockKey];
+  if (!reward) return { ok: false, error: 'Неверный тип рекламы для получения монет' };
+
+  const wallet = ensureWallet(db, actorKey);
+  const cur = Number(wallet.adCounts[blockKey] || 0);
+  if (cur >= 30) {
+    return {
+      ok: false,
+      error: 'Достигнут лимит рекламного блока (30/30 за 24 часа). Выберите другой формат или дождитесь сброса.',
+    };
+  }
+  if (!wallet.cycleStartedAt) wallet.cycleStartedAt = Date.now();
+  wallet.adCounts[blockKey] = cur + 1;
+  wallet.coins = Number(wallet.coins || 0) + reward;
+  wallet.totalEarnedCoins = Number(wallet.totalEarnedCoins || 0) + reward;
+  ctx.save();
+
+  return {
+    ok: true,
+    coinsAdded: reward,
+    coins: wallet.coins,
+    message: `Начислено +${reward} ${reward === 1 ? 'монета' : 'монеты'} за ${blockKey === 'bot_coins' ? 'рекламу в Telegram-боте' : 'просмотр рекламы'}!`,
+  };
+}
+
+function applyBotAdReward(ctx: AdServerContext, session: PendingBotAdSession): { ok: boolean; error?: string; result?: any } {
+  if (session.consumed) {
+    return { ok: true, result: session.creditResult || { ok: 1, message: 'Награда уже начислена' } };
+  }
+  if (session.blockKey === 'bot_coins') {
+    const r = executeCoinsCredit(ctx, session.actorKey, 'bot_coins');
+    if (!r.ok) return { ok: false, error: r.error };
+    session.verified = true;
+    session.consumed = true;
+    session.creditResult = r;
+    ctx.save();
+    return { ok: true, result: r };
+  }
+  if (session.blockKey === 'bot_sponsor') {
+    const tid = session.teamId || (session.actorKey.startsWith('club:') ? session.actorKey.slice(5) : '');
+    const sp = SPONSORS.find((x) => x.blockKey === 'bot_sponsor');
+    if (!tid || !sp) return { ok: false, error: 'Клуб не привязан к этой рекламной сессии' };
+    const r = executeSponsorCredit(ctx, tid, sp);
+    if (!r.ok) return { ok: false, error: r.error };
+    session.verified = true;
+    session.consumed = true;
+    session.creditResult = r;
+    ctx.save();
+    return { ok: true, result: r };
+  }
+  return { ok: false, error: 'Неизвестный тип бот-рекламы' };
+}
+
+async function dispatchRealAdsgramBotAd(
+  ctx: AdServerContext,
+  opts: {
+    tgId: string;
+    blockKey: 'bot_sponsor' | 'bot_coins';
+    actorKey: string;
+    teamId: string | null;
+    source: 'webapp' | 'telegram_bot';
+  }
+): Promise<{
+  ok: boolean;
+  mode?: 'bot_sent';
+  sessionToken?: string;
+  botUsername?: string;
+  needsBotStart?: boolean;
+  noFill?: boolean;
+  notConfigured?: boolean;
+  error?: string;
+}> {
+  const db = ctx.getDb();
+  const tgToken = String(ctx.getTgBotToken?.() || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_BOT_TOKEN || '').trim();
+  const pubToken = String(ctx.getAdsgramBotToken?.() || process.env.ADSGRAM_BOT_TOKEN || '').trim();
+  const blocks = getAdsgramBlocks(db);
+  const rawBlk = String(blocks[opts.blockKey] || '').trim();
+  const cleanBlk = rawBlk.replace(/^bot-/i, '').trim();
+
+  if (!tgToken || !pubToken || !/^\d+$/.test(cleanBlk) || !opts.tgId) {
+    return { ok: false, notConfigured: true };
+  }
+
+  const advUrl = `https://api.adsgram.ai/advbot?tgid=${encodeURIComponent(opts.tgId)}&blockid=${encodeURIComponent(cleanBlk)}&language=ru&token=${encodeURIComponent(pubToken)}`;
+  let adData: any = null;
+  try {
+    const advRes = await fetch(advUrl);
+    if (advRes.status === 204) {
+      return { ok: false, noFill: true, error: 'Сейчас в сети Adsgram нет рекламного предложения для вашего аккаунта. Попробуйте чуть позже.' };
+    }
+    const text = await advRes.text();
+    adData = text ? JSON.parse(text) : null;
+  } catch (err: any) {
+    return { ok: false, error: `Ошибка запроса к Adsgram Bot API: ${err?.message || 'сетевая ошибка'}` };
+  }
+
+  if (!adData || (!adData.click_url && !adData.text_html)) {
+    return { ok: false, noFill: true, error: 'Сейчас в сети Adsgram нет доступного рекламного поста. Попробуйте позже.' };
+  }
+
+  const inlineKeyboard: Array<Array<{ text: string; url: string }>> = [];
+  if (adData.click_url) {
+    inlineKeyboard.push([{ text: String(adData.button_name || 'Перейти по рекламе').slice(0, 64), url: String(adData.click_url) }]);
+  }
+  if (adData.reward_url) {
+    inlineKeyboard.push([{ text: String(adData.button_reward_name || 'Получить награду').slice(0, 64), url: String(adData.reward_url) }]);
+  }
+
+  const replyMarkup = inlineKeyboard.length ? { inline_keyboard: inlineKeyboard } : undefined;
+  const captionHtml = String(adData.text_html || 'Рекламное предложение партнёра').trim();
+
+  let tgRespData: any = null;
+  let sentOk = false;
+  if (adData.image_url) {
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: opts.tgId,
+          photo: String(adData.image_url),
+          caption: captionHtml.slice(0, 1024),
+          parse_mode: 'HTML',
+          protect_content: true,
+          reply_markup: replyMarkup,
+        }),
+      });
+      tgRespData = await r.json().catch(() => ({}));
+      sentOk = !!(r.ok && tgRespData?.ok);
+    } catch {}
+  }
+
+  if (!sentOk) {
+    const desc0 = String(tgRespData?.description || '');
+    const isPermErr = desc0.includes('initiated') || desc0.includes('blocked') || desc0.includes('chat not found') || desc0.includes('Forbidden');
+    if (!isPermErr) {
+      try {
+        const r2 = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: opts.tgId,
+            text: captionHtml.slice(0, 4096),
+            parse_mode: 'HTML',
+            protect_content: true,
+            disable_web_page_preview: false,
+            reply_markup: replyMarkup,
+          }),
+        });
+        tgRespData = await r2.json().catch(() => ({}));
+        sentOk = !!(r2.ok && tgRespData?.ok);
+      } catch (err: any) {
+        return { ok: false, error: `Ошибка отправки в Telegram: ${err?.message || 'сетевая ошибка'}` };
+      }
+    }
+  }
+
+  const botUsername = await resolveTelegramBotUsername(tgToken);
+  if (!sentOk) {
+    const desc = String(tgRespData?.description || '');
+    if (desc.includes('initiate') || desc.includes('blocked') || desc.includes('chat not found') || desc.includes('Forbidden')) {
+      return {
+        ok: false,
+        needsBotStart: true,
+        botUsername,
+        error: `Сначала откройте Telegram-бота${botUsername ? ' @' + botUsername : ''} и нажмите /start, чтобы бот мог прислать вам рекламный пост.`,
+      };
+    }
+    return { ok: false, error: `Не удалось отправить сообщение в Telegram: ${desc || 'неизвестная ошибка'}` };
+  }
+
+  const sessionToken = 'botad_' + crypto.randomBytes(14).toString('hex');
+  const now = Date.now();
+  const store = getBotAdSessionsStore(db);
+  store.push({
+    token: sessionToken,
+    blockKey: opts.blockKey,
+    actorKey: opts.actorKey,
+    teamId: opts.teamId,
+    tgId: opts.tgId,
+    source: opts.source,
+    mode: 'bot_sent',
+    createdAt: now,
+    expiresAt: now + 60 * 60 * 1000,
+    rewardConfirmed: false,
+    verified: false,
+    consumed: false,
+  });
+  ctx.save();
+
+  return { ok: true, mode: 'bot_sent', sessionToken, botUsername };
+}
+
 export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerContext) {
   // ─── Adsgram Config & Ad Session Lifecycle ────────────────────────────────────
   app.get('/api/ads/config', (req, res) => {
     const db = ctx.getDb();
+    const blocks = getAdsgramBlocks(db);
+    const tgToken = String(ctx.getTgBotToken?.() || '').trim();
+    const pubToken = String(ctx.getAdsgramBotToken?.() || '').trim();
+    const hasNumericBotBlock =
+      /^\d+$/.test(String(blocks.bot_sponsor || '').replace(/^bot-/i, '')) ||
+      /^\d+$/.test(String(blocks.bot_coins || '').replace(/^bot-/i, ''));
     res.json({
-      blocks: getAdsgramBlocks(db),
+      blocks,
       defs: ADSGRAM_BLOCKS,
       sponsors: SPONSORS,
       seasonPrizes: SEASON_PRIZES,
+      botAdsConfigured: !!(tgToken && pubToken && hasNumericBotBlock),
     });
   });
 
@@ -1474,6 +1845,357 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     res.json({ ok: 1, adProof: token, blockKey: s.blockKey, clicked: s.clicked });
   });
 
+  // ─── Adsgram Bot Ads ("Сообщения в ботах") ────────────────────────────────────
+  app.post('/api/ads/bot/start', async (req: any, res) => {
+    const db = ctx.getDb();
+    const blockKey = String(req.body?.blockKey || '').trim() as 'bot_sponsor' | 'bot_coins';
+    if (blockKey !== 'bot_sponsor' && blockKey !== 'bot_coins') {
+      return ctx.fail(res, 'Неизвестный блок бот-рекламы Adsgram');
+    }
+    const actor = resolveActor(req);
+    if (blockKey === 'bot_sponsor') {
+      if (!actor.teamId) return ctx.fail(res, 'Для запроса к спонсору необходимо войти по коду клуба.');
+      const st = ensureSponsorState(db, actor.teamId);
+      const sp = SPONSORS.find((x) => x.blockKey === 'bot_sponsor')!;
+      if (Number(st.views[sp.id] || 0) >= sp.maxViews) {
+        return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
+      }
+    } else {
+      const wallet = ensureWallet(db, actor.actorKey);
+      if (Number(wallet.adCounts.bot_coins || 0) >= 30) {
+        return ctx.fail(res, 'Достигнут лимит бот-рекламы для прогнозов (30/30 за 24 часа).');
+      }
+    }
+
+    const hints = extractTgHintsFromReq(ctx, req);
+    const prof = ensureOwnerProfile(ctx, actor.actorKey, hints.name, hints.photo, {
+      tgId: hints.tgId,
+      username: hints.username,
+    });
+    const tgId = String(hints.tgId || prof.telegramId || '').replace(/[^0-9]/g, '');
+    const blocks = getAdsgramBlocks(db);
+    const blockId = blocks[blockKey];
+
+    const dispatched = await dispatchRealAdsgramBotAd(ctx, {
+      tgId,
+      blockKey,
+      actorKey: actor.actorKey,
+      teamId: actor.teamId,
+      source: 'webapp',
+    });
+
+    if (dispatched.ok) {
+      return res.json({
+        ok: 1,
+        mode: 'bot_sent',
+        sessionToken: dispatched.sessionToken,
+        botUsername: dispatched.botUsername || '',
+        blockKey,
+        blockId,
+      });
+    }
+    if (dispatched.needsBotStart) {
+      return res.json({
+        ok: 0,
+        needsBotStart: true,
+        botUsername: dispatched.botUsername || '',
+        error: dispatched.error,
+      });
+    }
+    if (dispatched.notConfigured) {
+      // Fallback to interactive Telegram-bot preview modal when Bot Token / Adsgram Publisher Token / Numeric Block ID / tgId are not active yet
+      const sessionToken = 'botpv_' + crypto.randomBytes(14).toString('hex');
+      const now = Date.now();
+      const store = getBotAdSessionsStore(db);
+      store.push({
+        token: sessionToken,
+        blockKey,
+        actorKey: actor.actorKey,
+        teamId: actor.teamId,
+        tgId: tgId || '',
+        source: 'webapp',
+        mode: 'preview',
+        createdAt: now,
+        expiresAt: now + 30 * 60 * 1000,
+        rewardConfirmed: false,
+        verified: false,
+        consumed: false,
+      });
+      ctx.save();
+      return res.json({
+        ok: 1,
+        mode: 'preview',
+        sessionToken,
+        blockKey,
+        blockId,
+      });
+    }
+
+    return ctx.fail(res, dispatched.error || 'Не удалось отправить рекламу в Telegram-бот');
+  });
+
+  app.get('/api/ads/bot/status', (req: any, res) => {
+    const db = ctx.getDb();
+    const sessionToken = String(req.query?.sessionToken || '').trim();
+    if (!sessionToken) return ctx.fail(res, 'Не указан токен сессии');
+    const actor = resolveActor(req);
+    const store = getBotAdSessionsStore(db);
+    const s = store.find((x) => x.token === sessionToken);
+    if (!s) return ctx.fail(res, 'Рекламная сессия не найдена или истекла');
+    if (s.actorKey !== actor.actorKey) return ctx.fail(res, 'Сессия принадлежит другому пользователю');
+    res.json({
+      ok: 1,
+      mode: s.mode,
+      verified: !!s.verified,
+      consumed: !!s.consumed,
+      rewardConfirmed: !!s.rewardConfirmed,
+      expired: Date.now() > s.expiresAt,
+      creditResult: s.creditResult || null,
+    });
+  });
+
+  app.post('/api/ads/bot/complete', (req: any, res) => {
+    const db = ctx.getDb();
+    const sessionToken = String(req.body?.sessionToken || '').trim();
+    const clicked = !!req.body?.clicked;
+    const actor = resolveActor(req);
+    const store = getBotAdSessionsStore(db);
+    const s = store.find((x) => x.token === sessionToken);
+    if (!s) return ctx.fail(res, 'Рекламная сессия не найдена');
+    if (s.actorKey !== actor.actorKey) return ctx.fail(res, 'Сессия принадлежит другому пользователю');
+    if (s.mode !== 'preview') {
+      if (s.consumed && s.creditResult) {
+        return res.json({ ok: 1, alreadyCredited: true, creditResult: s.creditResult });
+      }
+      return ctx.fail(res, 'Ожидается переход и нажатие кнопки награды в сообщении Telegram-бота.');
+    }
+    if (!clicked) {
+      return ctx.fail(res, 'Сначала перейдите по рекламной ссылке в сообщении бота.');
+    }
+    s.rewardConfirmed = true;
+    s.verified = true;
+    const proof = 'ad_' + crypto.randomBytes(14).toString('hex');
+    adSessions.set(proof, {
+      token: proof,
+      blockKey: s.blockKey,
+      actorKey: actor.actorKey,
+      startedAt: s.createdAt,
+      requiresClick: true,
+      clicked: true,
+      verified: true,
+      consumed: false,
+    });
+    s.consumed = true;
+    ctx.save();
+    res.json({ ok: 1, adProof: proof, blockKey: s.blockKey, clicked: true });
+  });
+
+  const handleBotRewardCallback = async (req: any, res: Response) => {
+    const db = ctx.getDb();
+    const rawTgId = req.query?.tgid || req.query?.userid || req.query?.user_id || req.query?.telegram_id || req.body?.tgid || req.body?.userid || '';
+    const tgId = String(rawTgId).replace(/[^0-9]/g, '').slice(0, 32);
+    const wantsHtml = String(req.headers?.accept || '').includes('text/html');
+
+    if (!tgId) {
+      if (wantsHtml) {
+        return res.status(400).send('<html><body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Ошибка</h2><p>Не передан Telegram ID (tgid).</p></body></html>');
+      }
+      return res.status(400).json({ ok: 0, error: 'Missing tgid' });
+    }
+
+    const now = Date.now();
+    const store = getBotAdSessionsStore(db);
+    const pending = [...store].reverse().find(
+      (s) => s.tgId === tgId && s.mode === 'bot_sent' && !s.consumed && s.expiresAt > now
+    );
+
+    let msg = 'Награда подтверждена!';
+    if (pending) {
+      pending.rewardConfirmed = true;
+      const applied = applyBotAdReward(ctx, pending);
+      msg = applied.result?.message || applied.error || msg;
+
+      if (applied.ok && pending.source === 'telegram_bot') {
+        const tgToken = String(ctx.getTgBotToken?.() || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_BOT_TOKEN || '').trim();
+        if (tgToken) {
+          fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: tgId,
+              text: `✅ ${msg}`,
+            }),
+          }).catch(() => {});
+        }
+      }
+    }
+
+    if (wantsHtml) {
+      return res.send(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Adsgram Награда</title></head><body style="font-family:system-ui,sans-serif;background:#0d2f21;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px"><div style="max-width:380px;background:#144530;border:1px solid #2f7d55;border-radius:14px;padding:24px;text-align:center"><div style="font-size:38px;margin-bottom:10px">✅</div><h2 style="margin:0 0 8px;font-size:19px">Готово!</h2><p style="margin:0;color:#d5eae0;font-size:14px;line-height:1.45">${msg.replace(/</g, '&lt;')}</p><p style="margin:14px 0 0;color:#f0c419;font-size:13px">Можете вернуться обратно в игру.</p></div></body></html>`);
+    }
+    return res.json({ ok: 1, credited: !!pending, message: msg });
+  };
+
+  app.get('/api/ads/bot-reward', handleBotRewardCallback);
+  app.post('/api/ads/bot-reward', handleBotRewardCallback);
+
+  app.post('/api/telegram/bot-webhook', async (req: any, res) => {
+    res.json({ ok: true });
+    try {
+      const update = req.body || {};
+      const db = ctx.getDb();
+      const tgToken = String(ctx.getTgBotToken?.() || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_BOT_TOKEN || '').trim();
+      if (!tgToken) return;
+
+      const cb = update.callback_query;
+      const msg = update.message;
+      const from = cb?.from || msg?.from;
+      const chatId = cb?.message?.chat?.id || msg?.chat?.id || from?.id;
+      if (!from?.id || !chatId) return;
+      if (msg?.chat?.type && msg.chat.type !== 'private') return;
+
+      const tgId = String(from.id).replace(/[^0-9]/g, '');
+      if (!tgId) return;
+
+      const tgKey = `tg_${tgId}`;
+      const displayName = [from.first_name, from.last_name].filter(Boolean).join(' ').trim() || (from.username ? `@${from.username}` : `Болельщик #${tgId.slice(-4)}`);
+      db.telegramUsers ||= {};
+      db.telegramUsers[tgKey] = {
+        ...(db.telegramUsers[tgKey] || {}),
+        tgId,
+        displayName,
+        username: String(from.username || '').replace(/^@/, ''),
+        updatedAt: new Date().toISOString(),
+      };
+      ctx.save();
+
+      const sendBotReply = async (text: string, replyMarkup?: any) => {
+        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text,
+            parse_mode: 'HTML',
+            reply_markup: replyMarkup,
+          }),
+        }).catch(() => {});
+      };
+
+      const sendBotMenu = async () => {
+        const siteUrl = String(ctx.getSiteUrl?.() || process.env.APP_URL || '').trim().replace(/\/+$/, '');
+        const rows: any[] = [];
+        if (siteUrl && siteUrl.startsWith('https://')) {
+          rows.push([{ text: '⚽ Открыть Вирт РПЛ', web_app: { url: siteUrl } }]);
+        }
+        rows.push([{ text: '🪙 Реклама для Прогнозов (+2 мон.)', callback_data: 'ads_bot:bot_coins' }]);
+        rows.push([{ text: '💼 Реклама для Спонсоров (+€600)', callback_data: 'ads_bot:bot_sponsor' }]);
+        await sendBotReply(
+          `🏟 <b>Вирт РПЛ — Меню бота</b>\n\nЗдесь вы можете получить рекламные посты партнёров для пополнения монет в Прогнозах или бюджета вашего клуба.`,
+          { inline_keyboard: rows }
+        );
+      };
+
+      if (cb) {
+        const data = String(cb.data || '');
+        const answerCb = async (text?: string, alert = false) => {
+          await fetch(`https://api.telegram.org/bot${tgToken}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callback_query_id: cb.id, text, show_alert: alert }),
+          }).catch(() => {});
+        };
+
+        if (data === 'ads_bot:bot_coins' || data === 'ads_bot:bot_sponsor') {
+          const blockKey = data === 'ads_bot:bot_sponsor' ? 'bot_sponsor' : 'bot_coins';
+          const linkedTid = db.telegramClubLinks?.[tgKey] && ctx.team(db.telegramClubLinks[tgKey]) ? db.telegramClubLinks[tgKey] : null;
+          if (blockKey === 'bot_sponsor' && !linkedTid) {
+            await answerCb('Сначала откройте игру и войдите по коду клуба.', true);
+            await sendBotReply('💼 Для получения спонсорских выплат сначала откройте игру и войдите по коду вашего клуба, чтобы привязать Telegram.');
+            return;
+          }
+          const actorKey = linkedTid ? `club:${linkedTid}` : `user:${tgKey}`;
+          if (blockKey === 'bot_coins') {
+            const w = ensureWallet(db, actorKey);
+            if (Number(w.adCounts.bot_coins || 0) >= 30) {
+              await answerCb('Дневной лимит (30/30) исчерпан.', true);
+              return;
+            }
+          } else if (linkedTid) {
+            const st = ensureSponsorState(db, linkedTid);
+            if (Number(st.views.tg_bot_sponsor || 0) >= 10) {
+              await answerCb('Лимит спонсора (10/10) исчерпан.', true);
+              return;
+            }
+          }
+
+          await answerCb('Загружаю рекламный пост…');
+          const dispatched = await dispatchRealAdsgramBotAd(ctx, {
+            tgId,
+            blockKey,
+            actorKey,
+            teamId: linkedTid,
+            source: 'telegram_bot',
+          });
+          if (!dispatched.ok) {
+            await sendBotReply(dispatched.notConfigured
+              ? '⚙️ Реклама в сообщениях бота ещё не настроена администратором (укажите Publisher Token и числовой Block ID в Админке).'
+              : `⚠️ ${dispatched.error || 'Не удалось загрузить рекламу.'}`);
+          }
+          return;
+        }
+        await answerCb();
+        return;
+      }
+
+      const txt = String(msg?.text || '').trim();
+      if (txt.startsWith('/start') || txt.startsWith('/menu') || txt.startsWith('/ad') || txt.startsWith('/bonus')) {
+        await sendBotMenu();
+      }
+    } catch (e) {
+      console.error('[Telegram Bot Webhook Error]:', e);
+    }
+  });
+
+  app.post('/api/admin/telegram/set-webhook', ctx.admin, async (req: any, res) => {
+    const db = ctx.getDb();
+    const tgToken = String(ctx.getTgBotToken?.() || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_BOT_TOKEN || '').trim();
+    if (!tgToken) {
+      return ctx.fail(res, 'Сначала введите и сохраните токен Telegram-бота (tgToken).');
+    }
+    const rawSiteUrl = String(req.body?.siteUrl || ctx.getSiteUrl?.() || process.env.APP_URL || '').trim().replace(/\/+$/, '');
+    if (!rawSiteUrl.startsWith('https://')) {
+      return ctx.fail(res, 'Укажите публичный HTTPS-адрес сайта в поле «Адрес сайта (для ссылок в Telegram)».');
+    }
+    const webhookUrl = `${rawSiteUrl}/api/telegram/bot-webhook`;
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${tgToken}/setWebhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: webhookUrl,
+          allowed_updates: ['message', 'callback_query'],
+        }),
+      });
+      const j: any = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) {
+        return ctx.fail(res, `Ошибка Telegram setWebhook: ${j.description || r.status}`);
+      }
+      const botUsername = await resolveTelegramBotUsername(tgToken);
+      db.settings ||= {};
+      db.settings.tgWebhookUrl = webhookUrl;
+      ctx.save();
+      res.json({
+        ok: 1,
+        webhookUrl,
+        botUsername,
+        message: `Webhook бота${botUsername ? ' @' + botUsername : ''} успешно подключён!`,
+      });
+    } catch (err: any) {
+      return ctx.fail(res, `Сетевая ошибка при подключении Webhook: ${err?.message || err}`);
+    }
+  });
+
   // ─── Club Sponsors & RFS Bonus ────────────────────────────────────────────────
   app.get('/api/club/sponsors', ctx.needClub, (req: any, res) => {
     res.json(buildSponsorSummary(ctx, req.tid));
@@ -1490,60 +2212,12 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     if (currentViews >= sp.maxViews) {
       return ctx.fail(res, `Лимит показов у спонсора «${sp.name}» исчерпан (${sp.maxViews}/${sp.maxViews}) в этом 24-часовом цикле.`);
     }
-    const v = verifyAndConsumeAdProof(req.body?.adProof, sp.blockKey, actor.actorKey, false);
+    const v = verifyAndConsumeAdProof(req.body?.adProof, sp.blockKey, actor.actorKey, sp.blockKey === 'bot_sponsor');
     if (!v.ok) return ctx.fail(res, v.error);
 
-    if (!st.cycleStartedAt) st.cycleStartedAt = Date.now();
-    st.views[sp.id] = currentViews + 1;
-
-    // 95% approve, 5% decline
-    const approved = Math.random() < sp.approvalRate;
-    const t = ctx.team(req.tid);
-    ctx.ensureInitialBudgets();
-    const nowIso = new Date().toISOString();
-
-    if (approved) {
-      st.approved[sp.id] = Number(st.approved[sp.id] || 0) + 1;
-      st.earnedEur = Number(st.earnedEur || 0) + sp.rewardEur;
-      if (t) {
-        t.budget = Number(t.budget || 0) + sp.rewardEur;
-        db.budgetHistory ||= [];
-        db.budgetHistory.push({
-          id: 'bh_' + ctx.uid(),
-          teamId: t.id,
-          amount: sp.rewardEur,
-          type: 'sponsor_ad',
-          typeLabel: `Спонсор: ${sp.name}`,
-          description: `${sp.name} (${sp.formatLabel}): +€${sp.rewardEur.toLocaleString('ru-RU')}`,
-          date: nowIso,
-        });
-      }
-    } else {
-      st.declined[sp.id] = Number(st.declined[sp.id] || 0) + 1;
-    }
-
-    st.history.unshift({
-      id: 'sph_' + ctx.uid(),
-      sponsorId: sp.id,
-      sponsorName: sp.name,
-      approved,
-      amount: approved ? sp.rewardEur : 0,
-      date: nowIso,
-    });
-    st.history = st.history.slice(0, 30);
-
-    ctx.save();
-    const summary = buildSponsorSummary(ctx, req.tid);
-    res.json({
-      ok: 1,
-      approved,
-      amount: approved ? sp.rewardEur : 0,
-      newBudget: t?.budget || 0,
-      message: approved
-        ? `Спонсор «${sp.name}» одобрил заявку! Начислено +€${sp.rewardEur.toLocaleString('ru-RU')}.`
-        : `Спонсор «${sp.name}» отклонил запрос на финансирование (шанс отказа 5%), но просмотр засчитан в прогресс к бонусу РФС!`,
-      summary,
-    });
+    const credit = executeSponsorCredit(ctx, req.tid, sp);
+    if (!credit.ok) return ctx.fail(res, credit.error);
+    res.json(credit);
   });
 
   app.post('/api/club/sponsors/rfs-claim', ctx.needClub, (req: any, res) => {
@@ -1551,8 +2225,8 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
     const actor = resolveActor(req);
     const st = ensureSponsorState(db, req.tid);
     const totalViews = SPONSORS.reduce((acc, s) => acc + Math.min(s.maxViews, Number(st.views[s.id] || 0)), 0);
-    if (totalViews < 30) {
-      return ctx.fail(res, `Сначала нужно просмотреть все 30 реклам у 3 спонсоров (сейчас ${totalViews}/30).`);
+    if (totalViews < RFS_REQUIRED_VIEWS) {
+      return ctx.fail(res, `Сначала нужно просмотреть ${RFS_REQUIRED_VIEWS} реклам у спонсоров (сейчас ${totalViews}/${RFS_REQUIRED_VIEWS}).`);
     }
     if (Number(st.rfsExtraViews || 0) >= 30) {
       return ctx.fail(res, 'Достигнут дневной лимит блока Adsgram для бонуса РФС (30/30). Дождитесь сброса 24-часового таймера.');
@@ -1611,7 +2285,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
   // ─── Telegram WebApp Auto-Auth & Owner/Spectator Profiles ─────────────────────
   app.post('/api/auth/telegram', (req: any, res) => {
     const db = ctx.getDb();
-    const parsed = verifyAndParseTelegramAuth(db, req.body?.initData, req.body?.user, req.headers);
+    const parsed = verifyAndParseTelegramAuth(db, req.body?.initData, req.body?.user, req.headers, ctx.getTgBotToken?.());
     if (!parsed) {
       return ctx.fail(res, 'Данные Telegram не переданы');
     }
@@ -1880,6 +2554,7 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
         { blockKey: 'coins_short', blockId: blocks.coins_short, label: 'Короткая реклама', durationHint: '5 сек', rewardCoins: 1, maxViews: 30, views: Number(wallet.adCounts.coins_short || 0) },
         { blockKey: 'coins_banner', blockId: blocks.coins_banner, label: 'Баннерная реклама', durationHint: 'баннер', rewardCoins: 2, maxViews: 30, views: Number(wallet.adCounts.coins_banner || 0) },
         { blockKey: 'coins_long', blockId: blocks.coins_long, label: 'Длинная реклама', durationHint: '30 сек', rewardCoins: 3, maxViews: 30, views: Number(wallet.adCounts.coins_long || 0) },
+        { blockKey: 'bot_coins', blockId: blocks.bot_coins, label: 'Пост в боте', durationHint: 'бот · переход', rewardCoins: 2, maxViews: 30, views: Number(wallet.adCounts.bot_coins || 0), isBotAd: true },
       ],
       markets: PREDICTION_MARKETS,
       fixtures: openFixtures,
@@ -1894,8 +2569,8 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
 
   app.post('/api/predictions/earn-coins', (req: any, res) => {
     const db = ctx.getDb();
-    const blockKey = String(req.body?.blockKey || '').trim() as 'coins_short' | 'coins_banner' | 'coins_long';
-    const rewardMap: Record<string, number> = { coins_short: 1, coins_banner: 2, coins_long: 3 };
+    const blockKey = String(req.body?.blockKey || '').trim() as 'coins_short' | 'coins_banner' | 'coins_long' | 'bot_coins';
+    const rewardMap: Record<string, number> = { coins_short: 1, coins_banner: 2, coins_long: 3, bot_coins: 2 };
     const reward = rewardMap[blockKey];
     if (!reward) return ctx.fail(res, 'Неверный тип рекламы для получения монет');
 
@@ -1906,21 +2581,12 @@ export function registerAdsAndPredictionsRoutes(app: Express, ctx: AdServerConte
       return ctx.fail(res, 'Достигнут лимит рекламного блока (30/30 за 24 часа). Выберите другой формат или дождитесь сброса.');
     }
 
-    const v = verifyAndConsumeAdProof(req.body?.adProof, blockKey, actor.actorKey, false);
+    const v = verifyAndConsumeAdProof(req.body?.adProof, blockKey, actor.actorKey, blockKey === 'bot_coins');
     if (!v.ok) return ctx.fail(res, v.error);
 
-    if (!wallet.cycleStartedAt) wallet.cycleStartedAt = Date.now();
-    wallet.adCounts[blockKey] = cur + 1;
-    wallet.coins = Number(wallet.coins || 0) + reward;
-    wallet.totalEarnedCoins = Number(wallet.totalEarnedCoins || 0) + reward;
-    ctx.save();
-
-    res.json({
-      ok: 1,
-      coinsAdded: reward,
-      coins: wallet.coins,
-      message: `Начислено +${reward} ${reward === 1 ? 'монета' : 'монеты'} за просмотр рекламы!`,
-    });
+    const credit = executeCoinsCredit(ctx, actor.actorKey, blockKey);
+    if (!credit.ok) return ctx.fail(res, credit.error);
+    res.json(credit);
   });
 
   app.post('/api/predictions/bet', (req: any, res) => {

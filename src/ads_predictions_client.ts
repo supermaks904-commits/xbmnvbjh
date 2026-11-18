@@ -156,8 +156,13 @@ function ensureExtStyles() {
     }
     .pred-ads-grid{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:repeat(2,minmax(0,1fr));
       gap:10px;
+    }
+    .sp-cards-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
     }
     .coin-offer-btn{
       appearance:none;
@@ -624,7 +629,10 @@ function ensureExtStyles() {
     }
     @media (max-width:860px){
       .pred-grid{ grid-template-columns:1fr; }
+    }
+    @media (max-width:640px){
       .pred-ads-grid{ grid-template-columns:1fr; }
+      .sp-cards-grid{ grid-template-columns:1fr; }
     }
     @media (max-width:560px){
       .pred-hero{ padding:14px 15px; }
@@ -921,6 +929,251 @@ export async function runAdsgramBlock(
   });
 }
 
+export async function runAdsgramBotBlock(
+  blockKey: 'bot_sponsor' | 'bot_coins',
+  title: string,
+  subtitle?: string
+): Promise<{ adProof?: string; blockKey: string; clicked: boolean; alreadyCredited?: boolean; creditResult?: any } | null> {
+  const { api, e, toast, modal } = B();
+  let startRes: any;
+  try {
+    startRes = await api('/ads/bot/start', { blockKey });
+  } catch (err: any) {
+    toast(err?.message || 'Не удалось запустить рекламу в боте', true);
+    return null;
+  }
+
+  if (startRes?.needsBotStart) {
+    const botUser = String(startRes.botUsername || '').replace(/^@/, '');
+    const botUrl = botUser ? `https://t.me/${botUser}?start=ads` : '';
+    return new Promise((resolve) => {
+      let done = false;
+      const fin = (val: any) => {
+        if (done) return;
+        done = true;
+        resolve(val);
+      };
+      modal(
+        `<div style="max-width:440px;margin:0 auto">
+          <h3 style="margin:0 0 8px">Запустите Telegram-бота</h3>
+          <p class="small" style="line-height:1.45;margin:0 0 12px">${e(startRes.error || 'Сначала откройте переписку с ботом и нажмите «Запустить» (/start).')}</p>
+          <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            ${botUrl ? `<a href="${e(botUrl)}" target="_blank" rel="noopener" class="btn sm" style="min-height:40px;display:inline-flex;align-items:center">Открыть @${e(botUser)}</a>` : ''}
+            <button type="button" id="bot_start_retry" class="btn alt sm" style="min-height:40px">Повторить отправку</button>
+            <button type="button" id="bot_start_cancel" class="btn alt sm" style="min-height:40px">Закрыть</button>
+          </div>
+        </div>`,
+        (el, close) => {
+          const closeModal = typeof close === 'function' ? close : () => el.remove();
+          (el.querySelector('#bot_start_cancel') as HTMLElement).onclick = () => { closeModal(); fin(null); };
+          (el.querySelector('#bot_start_retry') as HTMLElement).onclick = async () => {
+            closeModal();
+            const retryVal = await runAdsgramBotBlock(blockKey, title, subtitle);
+            fin(retryVal);
+          };
+        }
+      );
+    });
+  }
+
+  if (startRes?.mode === 'bot_sent') {
+    const botUser = String(startRes.botUsername || '').replace(/^@/, '');
+    const botUrl = botUser ? `https://t.me/${botUser}` : '';
+    const sessionToken = String(startRes.sessionToken || '');
+    return new Promise((resolve) => {
+      let resolved = false;
+      let pollId: any = null;
+      let observer: MutationObserver | null = null;
+      const finish = (val: any) => {
+        if (resolved) return;
+        resolved = true;
+        if (pollId) clearInterval(pollId);
+        if (observer) observer.disconnect();
+        resolve(val);
+      };
+
+      const html = `
+        <div style="max-width:460px;margin:0 auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:700;color:#0369a1">Telegram-бот · Adsgram Блок <code>${e(startRes.blockId || '')}</code></span>
+            <span id="bot_wait_badge" style="font-size:12px;font-weight:700;color:#0d2f21;background:#dbeafe;padding:3px 9px;border-radius:6px">Ожидание перехода…</span>
+          </div>
+          <h3 style="margin:0 0 6px;font-size:17px">${e(title)}</h3>
+          ${subtitle ? `<div class="small muted" style="margin-bottom:10px">${e(subtitle)}</div>` : ''}
+          <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:12px;font-size:13.5px;line-height:1.5;color:#0c4a6e">
+            <b>Рекламный пост отправлен в личные сообщения Telegram-бота!</b>
+            <ol style="margin:8px 0 0;padding-left:18px">
+              <li>Откройте чат с ботом${botUser ? ` (@${e(botUser)})` : ''}.</li>
+              <li>Нажмите на первую рекламную кнопку в сообщении.</li>
+              <li>Вернитесь к сообщению и нажмите кнопку подтверждения награды.</li>
+            </ol>
+          </div>
+          <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            ${botUrl ? `<a href="${e(botUrl)}" target="_blank" rel="noopener" class="btn sm" style="min-height:42px;display:inline-flex;align-items:center">Открыть чат с ботом</a>` : ''}
+            <button type="button" id="bot_check_now" class="btn alt sm" style="min-height:42px">Проверить статус</button>
+            <button type="button" id="bot_wait_cancel" class="btn alt sm" style="min-height:42px">Закрыть</button>
+          </div>
+        </div>
+      `;
+
+      modal(html, (el, close) => {
+        const closeModal = typeof close === 'function' ? close : () => el.remove();
+        const badge = el.querySelector('#bot_wait_badge') as HTMLElement | null;
+        const checkBtn = el.querySelector('#bot_check_now') as HTMLButtonElement;
+        const cancelBtn = el.querySelector('#bot_wait_cancel') as HTMLButtonElement;
+
+        const checkStatus = async (manual = false) => {
+          try {
+            const st = await api(`/ads/bot/status?sessionToken=${encodeURIComponent(sessionToken)}`);
+            if (st?.consumed && st?.creditResult) {
+              closeModal();
+              finish({ blockKey, clicked: true, alreadyCredited: true, creditResult: st.creditResult });
+              return true;
+            }
+            if (st?.expired) {
+              if (badge) badge.textContent = 'Истекло';
+              toast('Срок ожидания рекламного сообщения истёк.', true);
+              closeModal();
+              finish(null);
+              return true;
+            }
+            if (manual) {
+              toast('Переход и подтверждение награды в боте ещё не зафиксированы.', true);
+            }
+          } catch {}
+          return false;
+        };
+
+        pollId = setInterval(() => { checkStatus(false); }, 2500);
+        checkBtn.onclick = () => { checkStatus(true); };
+        cancelBtn.onclick = () => { closeModal(); finish(null); };
+
+        observer = new MutationObserver(() => {
+          if (!document.body.contains(el)) finish(null);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+    });
+  }
+
+  // Preview mode (when bot token / publisher token / numeric block ID / tgId is not active yet)
+  const sessionToken = String(startRes?.sessionToken || '');
+  const blockId = String(startRes?.blockId || blockKey);
+  return new Promise((resolve) => {
+    let resolved = false;
+    let timerId: any = null;
+    let remaining = 3;
+    let clickedAd = false;
+    let observer: MutationObserver | null = null;
+    const finishResolve = (val: any) => {
+      if (resolved) return;
+      resolved = true;
+      if (timerId) clearInterval(timerId);
+      if (observer) observer.disconnect();
+      resolve(val);
+    };
+
+    const html = `
+      <div style="max-width:460px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:700;color:#0369a1">Adsgram Бот · Блок <code>${e(blockId)}</code></div>
+          <span id="bot_pv_timer" style="font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:#0d2f21;background:#fef3c7;padding:3px 9px;border-radius:6px">${remaining} сек</span>
+        </div>
+        <h3 style="margin:0 0 6px;font-size:17px">${e(title)}</h3>
+        ${subtitle ? `<div class="small muted" style="margin-bottom:12px">${e(subtitle)}</div>` : ''}
+        <div style="background:linear-gradient(135deg,#0c4a6e 0%,#0f766e 100%);color:#fff;border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid #38bdf8">
+          <div style="font-size:11px;color:#bae6fd;margin-bottom:6px">Предпросмотр сообщения в Telegram-боте</div>
+          <div style="font-weight:700;font-size:15.5px;margin-bottom:6px">Партнёрский пост в личных сообщениях бота</div>
+          <div style="font-size:13px;color:#e0f2fe;line-height:1.45;margin-bottom:12px">
+            В реальном Telegram-боте сообщение приходит с защитой от пересылки и двумя кнопками: сначала переход по рекламе, затем кнопка получения награды.
+          </div>
+          <button type="button" id="bot_pv_click" class="btn" style="width:100%;background:#f0c419;color:#0d2f21;font-weight:700;min-height:42px;margin-bottom:8px">
+            1. Перейти по рекламной ссылке
+          </button>
+          <div id="bot_pv_status" style="font-size:12px;color:#fef08a;text-align:center">Сначала выполните переход по кнопке выше</div>
+        </div>
+        <div class="row" style="gap:8px;justify-content:flex-end">
+          <button type="button" id="bot_pv_cancel" class="btn alt sm" style="min-height:42px">Отмена</button>
+          <button type="button" id="bot_pv_done" class="btn sm" disabled style="min-height:42px;opacity:0.55">Подождите (${remaining}с)</button>
+        </div>
+        <div class="small muted" style="margin-top:8px;font-size:11px">Чтобы отправлять реальные посты в Telegram, укажите Publisher Token, числовой Block ID и подключите Webhook в Админке → Настройки.</div>
+      </div>
+    `;
+
+    modal(html, (el, close) => {
+      const closeModal = typeof close === 'function' ? close : () => el.remove();
+      const timerBadge = el.querySelector('#bot_pv_timer') as HTMLElement;
+      const clickBtn = el.querySelector('#bot_pv_click') as HTMLButtonElement;
+      const statusEl = el.querySelector('#bot_pv_status') as HTMLElement;
+      const doneBtn = el.querySelector('#bot_pv_done') as HTMLButtonElement;
+      const cancelBtn = el.querySelector('#bot_pv_cancel') as HTMLButtonElement;
+
+      const syncState = () => {
+        if (remaining <= 0 && clickedAd) {
+          doneBtn.disabled = false;
+          doneBtn.style.opacity = '1';
+          doneBtn.textContent = '2. Получить награду';
+        } else if (remaining <= 0 && !clickedAd) {
+          doneBtn.disabled = true;
+          doneBtn.style.opacity = '0.55';
+          doneBtn.textContent = 'Нажмите кнопку перехода выше';
+        } else {
+          doneBtn.disabled = true;
+          doneBtn.style.opacity = '0.55';
+          doneBtn.textContent = `Подождите (${remaining}с)`;
+        }
+      };
+
+      clickBtn.onclick = () => {
+        clickedAd = true;
+        clickBtn.textContent = '1. Переход выполнен ✓';
+        clickBtn.style.background = '#bbf7d0';
+        statusEl.textContent = 'Кнопка награды активирована ✓';
+        statusEl.style.color = '#86efac';
+        syncState();
+      };
+
+      timerId = setInterval(() => {
+        remaining = Math.max(0, remaining - 1);
+        if (timerBadge) timerBadge.textContent = remaining > 0 ? `${remaining} сек` : 'Готово';
+        syncState();
+        if (remaining <= 0) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }, 1000);
+
+      cancelBtn.onclick = () => {
+        closeModal();
+        finishResolve(null);
+      };
+
+      doneBtn.onclick = async () => {
+        doneBtn.disabled = true;
+        doneBtn.textContent = 'Проверка…';
+        try {
+          const completed = await api('/ads/bot/complete', { sessionToken, clicked: clickedAd });
+          closeModal();
+          if (completed?.alreadyCredited) {
+            finishResolve({ blockKey, clicked: true, alreadyCredited: true, creditResult: completed.creditResult });
+          } else {
+            finishResolve({ adProof: completed.adProof, blockKey, clicked: true });
+          }
+        } catch (err: any) {
+          toast(err?.message || 'Ошибка подтверждения бот-рекламы', true);
+          doneBtn.disabled = false;
+          syncState();
+        }
+      };
+
+      observer = new MutationObserver(() => {
+        if (!document.body.contains(el)) finishResolve(null);
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  });
+}
+
 // ─── Club Tab: Sponsors + RFS Bonus ───────────────────────────────────────────
 let sponsorTimerHandle: any = null;
 
@@ -973,7 +1226,7 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
       <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
         <div>
           <h2 style="margin:0 0 4px">Спонсорская программа клуба</h2>
-          <div class="small muted">Запросите финансирование у 3 спонсоров (вероятность одобрения 95/5). Всего 30 показов (10 + 10 + 10) открывают бонус от РФС.</div>
+          <div class="small muted">Запросите финансирование у 4 спонсоров (включая посты в Telegram-боте, вероятность одобрения 95/5). Всего 30 показов открывают бонус от РФС.</div>
         </div>
         <div style="text-align:right;font-variant-numeric:tabular-nums">
           <div class="small muted">Сброс 24-часового цикла</div>
@@ -990,11 +1243,11 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
           <div style="height:100%;width:${pct}%;background:var(--green);transition:width 0.3s"></div>
         </div>
         <div class="small muted" style="margin-top:6px">
-          Важно: если не успеть посмотреть все 30 реклам за 24 часа с момента первого просмотра (даже если не хватило 1 рекламы), прогресс сбросится на 0/30.
+          Важно: если не успеть посмотреть 30 реклам за 24 часа с момента первого просмотра (даже если не хватило 1 рекламы), прогресс сбросится на 0/30.
         </div>
       </div>
 
-      <div class="grid g3">${sponsorCards}</div>
+      <div class="sp-cards-grid">${sponsorCards}</div>
     </div>
 
     <div class="panel" style="border:1.5px solid ${sp.rfsUnlocked ? '#15803d' : 'var(--line)'};background:${sp.rfsUnlocked ? '#f0fdf4' : 'var(--panel)'}">
@@ -1006,7 +1259,7 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
               ? `Все 30 реклам просмотрены! ${sp.rfsClaimed
                   ? `Бонус активирован. Каждая дополнительная реклама в этом блоке приносит +€1 000 в бюджет клуба (просмотрено: ${sp.rfsExtraViews}/${sp.rfsMaxViews}, заработано: ${fmtEuro(sp.rfsEarnedEur)}).`
                   : 'Нажмите кнопку и посмотрите 1 бонусную рекламу РФС, чтобы получить +€1 000 и открыть режим выплат по €1 000 за каждый следующий показ до сброса 24ч!'}`
-              : `Откроется после просмотра всех 30 реклам у 3 спонсоров (осталось ${sp.totalRequired - sp.totalViews}). После активации каждая дополнительная реклама приносит по €1 000 до конца 24-часового цикла.`}
+              : `Откроется после просмотра 30 реклам у спонсоров (осталось ${Math.max(0, sp.totalRequired - sp.totalViews)}). После активации каждая дополнительная реклама приносит по €1 000 до конца 24-часового цикла.`}
           </div>
           <div class="small muted" style="margin-top:4px">Рекламный блок Adsgram: <code>${e(sp.rfsBlockId)}</code></div>
         </div>
@@ -1056,8 +1309,16 @@ export function renderClubSponsorsTab(cb: HTMLElement, c: any, reloadClub: () =>
       const sponsorId = (btn as HTMLElement).dataset.spAsk!;
       const blockKey = (btn as HTMLElement).dataset.spBlock!;
       const spName = (btn as HTMLElement).dataset.spName!;
-      const adRes = await runAdsgramBlock(blockKey, `Запрос к спонсору «${spName}»`, 'После просмотра спонсор рассмотрит заявку (вероятность одобрения 95/5).');
+      const adRes = blockKey === 'bot_sponsor'
+        ? await runAdsgramBotBlock('bot_sponsor', `Запрос к спонсору «${spName}»`, 'Перейдите по рекламе в сообщении бота (вероятность одобрения 95/5).')
+        : await runAdsgramBlock(blockKey, `Запрос к спонсору «${spName}»`, 'После просмотра спонсор рассмотрит заявку (вероятность одобрения 95/5).');
       if (!adRes) return;
+      if ((adRes as any).alreadyCredited && (adRes as any).creditResult) {
+        const cr = (adRes as any).creditResult;
+        toast(cr.message || 'Заявка спонсору обработана!', !cr.approved);
+        reloadClub();
+        return;
+      }
       try {
         const res = await api('/club/sponsors/request', { ...teamParam, sponsorId, adProof: adRes.adProof });
         toast(res.message, !res.approved);
@@ -1518,12 +1779,16 @@ export async function renderPredictionsPage(app: HTMLElement) {
             ? { title: 'Быстрый пас', sub: 'Короткий ролик · 5 сек' }
             : o.blockKey === 'coins_banner'
               ? { title: 'Щит у поля', sub: 'Баннер матча · бровка' }
-              : { title: 'Перерыв матча', sub: 'Полный ролик · 30 сек' };
+              : o.blockKey === 'bot_coins'
+                ? { title: 'Пост в боте', sub: 'Telegram-бот · переход' }
+                : { title: 'Перерыв матча', sub: 'Полный ролик · 30 сек' };
           const iconSvg = o.blockKey === 'coins_short'
             ? `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M9 2h6"/><path d="M12 2v3"/></svg>`
             : o.blockKey === 'coins_banner'
               ? `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><line x1="12" y1="5" x2="12" y2="19"/><circle cx="12" cy="12" r="2.6"/><path d="M2.5 9.2h2.8v5.6H2.5"/><path d="M21.5 9.2h-2.8v5.6h2.8"/></svg>`
-              : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
+              : o.blockKey === 'bot_coins'
+                ? `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 3.5 2.5 11l7 2.5L19 6l-7.5 9 6 4.5 4-16Z"/></svg>`
+                : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55-.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
           return `
           <button type="button" class="coin-offer-btn${isFeatured ? ' featured' : ''}" data-earn-coins="${e(o.blockKey)}" ${maxed ? 'disabled' : ''}>
             <div class="coin-offer-top">
@@ -1573,9 +1838,22 @@ export async function renderPredictionsPage(app: HTMLElement) {
   app.querySelectorAll('[data-earn-coins]').forEach((b) => {
     (b as HTMLButtonElement).onclick = async () => {
       const blockKey = (b as HTMLElement).dataset.earnCoins!;
-      const label = blockKey === 'coins_short' ? '+1 монета (5 сек)' : blockKey === 'coins_banner' ? '+2 монеты (баннер)' : '+3 монеты (30 сек)';
-      const adRes = await runAdsgramBlock(blockKey, `Пополнение баланса: ${label}`);
+      const label = blockKey === 'coins_short'
+        ? '+1 монета (5 сек)'
+        : blockKey === 'coins_banner'
+          ? '+2 монеты (баннер)'
+          : blockKey === 'bot_coins'
+            ? '+2 монеты (пост в боте)'
+            : '+3 монеты (30 сек)';
+      const adRes = blockKey === 'bot_coins'
+        ? await runAdsgramBotBlock('bot_coins', `Пополнение баланса: ${label}`, 'Бот отправит рекламный пост в Telegram.')
+        : await runAdsgramBlock(blockKey, `Пополнение баланса: ${label}`);
       if (!adRes) return;
+      if ((adRes as any).alreadyCredited && (adRes as any).creditResult) {
+        toast((adRes as any).creditResult.message || 'Начислено +2 монеты!');
+        renderPredictionsPage(app);
+        return;
+      }
       try {
         const res = await api('/predictions/earn-coins', { blockKey, adProof: adRes.adProof });
         toast(res.message);
@@ -2011,10 +2289,14 @@ export function renderAdminAdsSettingsHtml(ov: any, e: (s: any) => string): stri
   const defs = ov.settings?.adsgramBlockDefs || [];
   const blocks = ov.settings?.adsgramBlocks || {};
   if (!defs.length) return '';
+  const baseUrl = String(ov.settings?.appBaseUrl || ov.settings?.siteUrl || (typeof location !== 'undefined' ? location.origin : '')).replace(/\/+$/, '');
+  const rewardUrl = baseUrl ? `${baseUrl}/api/ads/bot-reward` : '/api/ads/bot-reward';
+  const webhookUrl = baseUrl ? `${baseUrl}/api/telegram/bot-webhook` : '/api/telegram/bot-webhook';
+
   return `
     <div class="panel" style="margin-top:16px">
       <h3>Рекламная сеть Adsgram (отдельный Block ID для каждой кнопки)</h3>
-      <p class="small muted" style="margin:0 0 10px">Укажите реальные Block ID из личного кабинета Adsgram для каждой кнопки. В предпросмотре при строковых ID работает интерактивная эмуляция.</p>
+      <p class="small muted" style="margin:0 0 10px">Укажите реальные Block ID из личного кабинета Adsgram для каждой кнопки. Для блоков Telegram-бота используйте числовой ID (или <code>bot-12345</code>). В предпросмотре при строковых ID работает интерактивная эмуляция.</p>
       <div class="grid g2">
         ${defs.map((d: any) => `
           <label class="small" style="display:block">${e(d.label)}
@@ -2022,6 +2304,22 @@ export function renderAdminAdsSettingsHtml(ov: any, e: (s: any) => string): stri
           </label>
         `).join('')}
       </div>
+
+      <div style="margin-top:14px;padding:12px 14px;background:var(--soft);border:1px solid var(--line);border-radius:10px">
+        <div style="font-weight:700;font-size:13.5px;margin-bottom:6px">Настройка рекламы в сообщениях Telegram-бота (Adsgram Bot)</div>
+        <label class="small" style="display:block;margin-bottom:8px">Publisher Token из профиля Adsgram
+          <input id="ads_bot_token" value="${e(ov.settings?.adsgramBotToken || '')}" placeholder="Скопируйте токен издателя из кабинета Adsgram" style="width:100%;margin-top:4px;font-family:monospace">
+        </label>
+        <div class="small muted" style="line-height:1.5;margin-bottom:8px">
+          <b>Reward URL</b> (вставьте в поле Reward URL при создании блока «Бот» в Adsgram):<br>
+          <code style="user-select:all;word-break:break-all">${e(rewardUrl)}</code>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px">
+          <div class="small muted" style="word-break:break-all">Webhook бота: <code>${e(webhookUrl)}</code></div>
+          <button type="button" class="btn alt sm" id="btn_tg_set_webhook">🔗 Подключить Webhook бота</button>
+        </div>
+      </div>
+
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <div class="small muted">Наградить Топ-3 Лиги прогнозов по итогам текущего сезона (€1 250 000 + 10 мон. + Кубок / €500 000 + 5 мон. / €250 000 + 3 мон.)</div>
         <button type="button" class="btn alt sm" id="btn_award_pred_season">Выдать призы Лиги прогнозов</button>
@@ -2040,13 +2338,20 @@ export function collectAdminAdsBlocks(ov: any): Record<string, string> {
   return out;
 }
 
+export function collectAdminAdsBotToken(): string {
+  const inp = document.getElementById('ads_bot_token') as HTMLInputElement | null;
+  return inp ? inp.value.trim() : '';
+}
+
 window.__RPL_EXT__ = {
   getClientHeaders,
   syncTelegramAuth,
   runAdsgramBlock,
+  runAdsgramBotBlock,
   renderClubSponsorsTab,
   renderPredictionsPage,
   renderNationalProposalsSection,
   renderAdminAdsSettingsHtml,
   collectAdminAdsBlocks,
+  collectAdminAdsBotToken,
 };

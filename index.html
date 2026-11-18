@@ -12716,6 +12716,14 @@ async function pgAdmin(app) {
       };
     }
 
+    if ($('#btn_tg_set_webhook')) {
+      $('#btn_tg_set_webhook').onclick = async () => {
+        const siteUrlVal = $('#url')?.value?.trim() || '';
+        const r = await act(() => api('/admin/telegram/set-webhook', { siteUrl: siteUrlVal }), (d) => d.message || 'Webhook подключён!');
+        if (r && r.ok) re();
+      };
+    }
+
     $('#ssv').onclick = async () => {
       const keys = {}, models = {};
       for (const n of ['gemini', 'groq', 'openrouter']) {
@@ -12723,7 +12731,7 @@ async function pgAdmin(app) {
         models[n] = $('#m_' + n).value;
         if (!keys[n]) delete keys[n];
       }
-      await act(() => api('/admin/settings', { keys, models, grounding: $('#gr').checked, secPerMin: $('#spm').value, breakSec: $('#brk').value, tgToken: $('#tgt').value, tgChat: $('#tgc').value, siteUrl: $('#url').value, squadMax: $('#sqm').value, chunks: $('#chk').value, auto: $('#auto').checked, techDefeat: $('#tdef').checked, systemPrompt: $('#sys').value, adsgramBlocks: ext.collectAdminAdsBlocks(ov) }), 'Настройки сохранены');
+      await act(() => api('/admin/settings', { keys, models, grounding: $('#gr').checked, secPerMin: $('#spm').value, breakSec: $('#brk').value, tgToken: $('#tgt').value, tgChat: $('#tgc').value, siteUrl: $('#url').value, squadMax: $('#sqm').value, chunks: $('#chk').value, auto: $('#auto').checked, techDefeat: $('#tdef').checked, systemPrompt: $('#sys').value, adsgramBlocks: ext.collectAdminAdsBlocks(ov), adsgramBotToken: ext.collectAdminAdsBotToken() }), 'Настройки сохранены');
       re();
     };
   }
