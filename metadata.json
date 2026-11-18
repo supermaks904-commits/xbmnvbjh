@@ -1,0 +1,6 @@
+{
+  "name": "Вирт РПЛ и Кубок России — Симулятор с Жеребьевкой",
+  "description": "Интерактивный симулятор футбола с жеребьевкой, спонсорами Adsgram, прогнозами на тур, профилями владельцев и сборной России.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
